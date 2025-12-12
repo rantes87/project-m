@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProjectM - Global Launch</title>
+    <style>
+        :root {
+            --primary: #00ff88;
+            --bg: #0a0a0a;
+            --card: #141414;
+            --text: #e0e0e0;
+            --danger: #ff4444;
+            --gold: #ffd700;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        h1 { margin: 0; letter-spacing: -2px; }
+        .version { font-size: 0.8em; color: #666; }
+
+        .protocol-box {
+            background: #1a1a00;
+            border: 1px solid var(--gold);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .card h3 { margin-top: 0; font-size: 0.8em; color: #888; text-transform: uppercase; }
+        .value { font-size: 1.5em; font-weight: bold; color: var(--primary); }
+        .sub-value { font-size: 0.8em; color: #666; }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover { background: #444; }
+        
+        button.primary { background: var(--primary); color: black; border: none; }
+        button.primary:hover { opacity: 0.9; }
+
+        button.danger { background: #330000; border: 1px solid var(--danger); color: var(--danger); }
+        button.danger:hover { background: var(--danger); color: white; }
+
+        .connect-btn { margin-bottom: 20px; }
+
+        #error-msg { color: var(--danger); text-align: center; margin-top: 10px; display: none; }
+        
+        .loader { display: inline-block; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .blink-green { animation: flashGreen 1s; }
+        @keyframes flashGreen { 0% { background-color: var(--primary); } 100% { background-color: var(--card); } }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <button id="connectBtn" class="connect-btn" onclick="connectWallet()">[ CONNECT WALLET ]</button>
+
+        <header>
+            <h1>PROJECT M</h1>
+            <div class="version">v1.0.5 :: DIRECT BURN :: 3% TAX</div>
+        </header>
+
+        <div class="protocol-box">
+            <strong>⚠ GLOBAL SPREAD PROTOCOL</strong><br>
+            Coordinate with 3 contacts in different regions.<br>
+            Current Target: <span style="color:var(--gold)">Level 11</span>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card">
+                <h3>Global Level</h3>
+                <div class="value" id="contractLevel">--</div>
+                <div class="sub-value">Next Price Increase soon</div>
+            </div>
+            <div class="card">
+                <h3>Entry Price</h3>
+                <div class="value" id="currentPrice">-- ETH</div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card">
+                <h3>Contract Balance</h3>
+                <div class="value" id="contractBalance">-- ETH</div>
+            </div>
+            <div class="card">
+                <h3>Total Burned</h3>
+                <div class="value" id="totalBurned">--</div>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h3>Your Status</h3>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <div>
+                    <div class="value" id="myBalance">0.00 PMT</div>
+                    <div class="sub-value" id="myLevel">Not Joined</div>
+                </div>
+                <div style="text-align:right;">
+                    <div class="value" style="color:var(--gold)" id="burnValue">0.00 ETH</div>
+                    <div class="sub-value">Cash-out Value (Net 3.3%)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="mainActionBtn" class="primary" onclick="handleMainAction()">LOADING...</button>
+            
+            <button id="burnBtn" class="danger" onclick="burnSoap()">
+                BURN ALL & CASH OUT
+            </button>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input type="number" id="donateAmount" placeholder="ETH Amount" style="width:100%; padding:10px; background:#111; border:1px solid #333; color:white;">
+                <button onclick="goBig()" style="width:150px;">GO BIG</button>
+            </div>
+        </div>
+
+        <div id="error-msg"></div>
+
+    </div>
+
+<script>
+    // ==========================================
+    // 1. CONFIGURATION
+    // ==========================================
+    
+    // REPLACE THIS WITH YOUR DEPLOYED CONTRACT ADDRESS
+    const CONTRACT_ADDRESS = "PASTE_YOUR_ADDRESS_HERE"; 
+    
+    // ==========================================
+
+    const ABI = [
+        "function join() external payable",
+        "function mine() external payable",
+        "function burnAllSoap() external",
+        "function goBig() external payable",
+        "function projectStats() view returns (uint256 level, uint256 entryPrice, uint256 burnPricePerToken, uint256 totalBurned, uint256 totalSupply, uint256 contractEthBalance, uint256 totalTaxCollected, uint256 tokensInLevel)",
+        "function playerStats(address user) view returns (uint256 balance, uint256 level, uint256 tokensToMine, uint256 grossBurnValue, uint256 netBurnValue, uint256 taxValue)",
+        "function getCurrentPrice() view returns (uint256)",
+        "function levelOf(address) view returns (uint256)"
+    ];
+
+    let provider, signer, contract;
+    let userAddress = null;
+    let currentEntryPrice = ethers.BigNumber.from(0);
+    let userLevel = 0;
+    let contractLevel = 0;
+
+    async function connectWallet() {
+        if (!window.ethereum) {
+            alert("Please install MetaMask!");
+            return;
+        }
+        try {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            signer = provider.getSigner();
+            userAddress = await signer.getAddress();
+            contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+            document.getElementById("connectBtn").innerText = userAddress.substring(0,6) + "..." + userAddress.substring(38);
+            document.getElementById("connectBtn").style.background = "#1a1a1a";
+            
+            updateData();
+            setInterval(updateData, 5000); // Live updates
+        } catch (err) {
+            console.error(err);
+            showError(err.message);
+        }
+    }
+
+    async function updateData() {
+        if (!contract) return;
+
+        try {
+            // Fetch Global Stats
+            const pStats = await contract.projectStats();
+            contractLevel = pStats.level.toNumber();
+            currentEntryPrice = pStats.entryPrice;
+            
+            document.getElementById("contractLevel").innerText = contractLevel;
+            document.getElementById("currentPrice").innerText = ethers.utils.formatEther(pStats.entryPrice) + " ETH";
+            document.getElementById("contractBalance").innerText = parseFloat(ethers.utils.formatEther(pStats.contractEthBalance)).toFixed(4) + " ETH";
+            document.getElementById("totalBurned").innerText = pStats.totalBurned.toString();
+
+            // Fetch User Stats
+            const uStats = await contract.playerStats(userAddress);
+            userLevel = uStats.level.toNumber();
+            const myBal = parseFloat(ethers.utils.formatEther(uStats.balance)).toFixed(2);
+            
+            // TAX CALCULATION FIX (3.33%)
+            // The contract returns netBurnValue, which is already calculated as gross - (gross/30)
+            const netValue = parseFloat(ethers.utils.formatEther(uStats.netBurnValue)).toFixed(4);
+
+            document.getElementById("myBalance").innerText = myBal + " PMT";
+            document.getElementById("burnValue").innerText = netValue + " ETH";
+            document.getElementById("myLevel").innerText = userLevel === 0 ? "Not Joined" : "Level " + userLevel;
+
+            // Update Main Button State
+            const btn = document.getElementById("mainActionBtn");
+            if (userLevel === 0) {
+                btn.innerText = `JOIN NOW (${ethers.utils.formatEther(currentEntryPrice)} ETH)`;
+                btn.onclick = join;
+                btn.className = "primary";
+            } else if (userLevel < contractLevel) {
+                btn.innerText = `MINE TO LEVEL ${contractLevel} (${ethers.utils.formatEther(currentEntryPrice)} ETH)`;
+                btn.onclick = mine;
+                btn.className = "primary";
+            } else {
+                btn.innerText = "ALREADY AT MAX LEVEL (WAIT)";
+                btn.className = "primary";
+                btn.style.opacity = "0.5";
+                btn.onclick = null;
+            }
+
+            // Burn Button State
+            const burnBtn = document.getElementById("burnBtn");
+            if (parseFloat(myBal) > 0) {
+                burnBtn.disabled = false;
+                burnBtn.style.opacity = "1";
+            } else {
+                burnBtn.disabled = true;
+                burnBtn.style.opacity = "0.3";
+            }
+
+        } catch (err) {
+            console.error("Data fetch error:", err);
+        }
+    }
+
+    async function handleMainAction() {
+        if (userLevel === 0) join();
+        else mine();
+    }
+
+    async function join() {
+        try {
+            showError("");
+            const tx = await contract.join({ value: currentEntryPrice });
+            document.getElementById("mainActionBtn").innerText = "CONFIRMING...";
+            await tx.wait();
+            updateData();
+        } catch (err) {
+            showError(err.data?.message || err.message);
+        }
+    }
+
+    async function mine() {
+        try {
+            showError("");
+            const tx = await contract.mine({ value: currentEntryPrice });
+            document.getElementById("mainActionBtn").innerText = "MINING...";
+            await tx.wait();
+            updateData();
+        } catch (err) {
+            showError(err.data?.message || err.message);
+        }
+    }
+
+    async function burnSoap() {
+        if(!confirm("Are you sure? This burns your tokens and withdraws ETH.")) return;
+        try {
+            showError("");
+            const tx = await contract.burnAllSoap();
+            document.getElementById("burnBtn").innerText = "BURNING...";
+            await tx.wait();
+            document.getElementById("burnBtn").innerText = "BURN ALL & CASH OUT";
+            updateData();
+        } catch (err) {
+            showError(err.data?.message || err.message);
+        }
+    }
+
+    async function goBig() {
+        const val = document.getElementById("donateAmount").value;
+        if (!val) return;
+        try {
+            showError("");
+            const weiVal = ethers.utils.parseEther(val);
+            const tx = await contract.goBig({ value: weiVal });
+            await tx.wait();
+            updateData();
+        } catch (err) {
+            showError(err.data?.message || err.message);
+        }
+    }
+
+    function showError(msg) {
+        const el = document.getElementById("error-msg");
+        if (msg) {
+            el.style.display = "block";
+            el.innerText = "Error: " + msg;
+        } else {
+            el.style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>
