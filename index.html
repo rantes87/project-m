@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURAL_PULSE // DATA_STREAM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg: #050505;
+            --panel: #0d1117;
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #ff00ff;
+            --text: #00d4ff;
+            --scanline: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] {
+            --bg: #e0e6ed;
+            --panel: #ffffff;
+            --neon-cyan: #0077ff;
+            --neon-magenta: #d000ff;
+            --text: #1a202c;
+            --scanline: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background 0.4s, color 0.4s;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* CRT OVERLAY */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(var(--scanline) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            z-index: 9999;
+            pointer-events: none;
+            background-size: 100% 3px, 3px 100%;
+        }
+
+        .system-bar {
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 8px 20px;
+            font-size: 0.65rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--neon-magenta);
+            color: var(--neon-magenta);
+            padding: 2px 8px;
+            cursor: pointer;
+            font-family: 'Orbitron';
+            font-size: 0.6rem;
+        }
+
+        header {
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--neon-magenta);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--text);
+            text-shadow: 2px 2px var(--neon-magenta);
+            letter-spacing: 5px;
+        }
+
+        /* TICKER */
+        .ticker-wrap {
+            background: var(--neon-magenta);
+            color: #000;
+            padding: 5px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        .ticker-move {
+            display: inline-block;
+            animation: ticker-kf 60s linear infinite;
+        }
+
+        @keyframes ticker-kf {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* GRID */
+        .layout {
+            display: flex;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .feed {
+            flex: 3;
+        }
+
+        .sidebar {
+            flex: 1;
+            background: var(--panel);
+            border: 1px solid var(--neon-cyan);
+            padding: 20px;
+            clip-path: polygon(0 0, 100% 0, 100% 95%, 90% 100%, 0 100%);
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* CARDS */
+        .cyber-card {
+            background: var(--panel);
+            border: 1px solid rgba(128, 128, 128, 0.2);
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cyber-card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        .cyber-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            filter: grayscale(0.5) contrast(1.1);
+        }
+
+        .card-content {
+            padding: 15px;
+            flex-grow: 1;
+        }
+
+        .card-content h3 {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cyber-btn {
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 8px;
+            flex: 1;
+            font-family: 'Orbitron';
+            cursor: pointer;
+            font-size: 0.7rem;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .cyber-btn:hover {
+            background: var(--neon-cyan);
+            color: var(--bg);
+        }
+
+        .fav-mark {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--bg);
+            border: 1px solid var(--neon-magenta);
+            color: var(--neon-magenta);
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1000px) {
+            .layout {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body data-theme="dark">
+
+    <div class="system-bar">
+        <span>CORE_LINK: ACTIVE // AUTH_KEY: 2D3F...</span>
+        <div>
+            <span id="clock" style="margin-right: 20px;"></span>
+            <button class="theme-toggle" onclick="toggleTheme()">SWITCH_MODE</button>
+        </div>
+    </div>
+
+    <div class="ticker-wrap">
+        <div id="ticker" class="ticker-move">UPLINKING TO GLOBAL BROADCAST NODES...</div>
+    </div>
+
+    <header>
+        <div class="logo">NEURAL<span>PULSE</span></div>
+        <select id="region" onchange="fetchNews()" style="background: var(--bg); color: var(--text); border: 1px solid var(--text); padding: 5px;">
+            <option value="us">NODE_USA</option>
+            <option value="gb">NODE_UK</option>
+            <option value="jp">NODE_JPN</option>
+        </select>
+    </header>
+
+    <div class="layout">
+        <main class="feed">
+            <div id="news-grid" class="news-grid"></div>
+        </main>
+        <aside class="sidebar">
+            <h3 style="color: var(--neon-magenta); font-family: 'Orbitron'; font-size: 0.8rem; margin-bottom: 15px;">// ARCHIVE</h3>
+            <div id="fav-list"></div>
+        </aside>
+    </div>
+
+    <script>
+        const API_KEY = '2d3ffe08d7f14128a211edf8f45cb1c0';
+        let favs = JSON.parse(localStorage.getItem('np_favs')) || [];
+        const synth = window.speechSynthesis;
+
+        async function fetchNews() {
+            const country = document.getElementById('region').value;
+            try {
+                const res = await fetch(`https://newsapi.org/v2/top-headlines?country=${country}&apiKey=${API_KEY}`);
+                const data = await res.json();
+                renderNews(data.articles);
+                updateTicker(data.articles);
+            } catch (err) {
+                document.getElementById('news-grid').innerHTML = "ERR: SIGNAL_INTERRUPTED";
+            }
+        }
+
+        function renderNews(articles) {
+            window.latest = articles;
+            const grid = document.getElementById('news-grid');
+            grid.innerHTML = articles.map((a, i) => {
+                if (!a.urlToImage) return '';
+                return `
+                <div class="cyber-card">
+                    <button class="fav-mark" onclick="saveFav(${i})">★</button>
+                    <img src="${a.urlToImage}">
+                    <div class="card-content">
+                        <h3>${a.title}</h3>
+                        <div class="btn-group">
+                            <a href="${a.url}" target="_blank" class="cyber-btn">ACCESS</a>
+                            <button class="cyber-btn" style="border-color:var(--neon-magenta); color:var(--neon-magenta)" onclick="speak('${btoa(encodeURIComponent(a.title))}')">AUDIO</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function updateTicker(articles) {
+            document.getElementById('ticker').innerHTML = articles.map(a => ` [!] ${a.title.toUpperCase()} --- `).join('');
+        }
+
+        function speak(encoded) {
+            synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(decodeURIComponent(atob(encoded)));
+            utterance.pitch = 0.8;
+            synth.speak(utterance);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const current = body.getAttribute('data-theme');
+            body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+        }
+
+        function saveFav(i) {
+            const art = window.latest[i];
+            if (!favs.some(f => f.url === art.url)) {
+                favs.push({
+                    title: art.title,
+                    url: art.url
+                });
+                localStorage.setItem('np_favs', JSON.stringify(favs));
+                renderFavs();
+            }
+        }
+
+        function renderFavs() {
+            document.getElementById('fav-list').innerHTML = favs.map(f => `
+                <div style="margin-bottom:10px; border-left: 2px solid var(--neon-magenta); padding-left: 8px;">
+                    <a href="${f.url}" target="_blank" style="color:var(--text); font-size:0.7rem; text-decoration:none;">> ${f.title}</a>
+                </div>
+            `).join('');
+        }
+
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        }, 1000);
+
+        fetchNews();
+        renderFavs();
+        setInterval(fetchNews, 900000);
+    </script>
+</body>
+
+</html>
