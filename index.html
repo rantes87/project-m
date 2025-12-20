@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Evolution: Master Edition</title>
+    <title>Universal Evolution: Sonic</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="dark"] {
@@ -13,7 +13,7 @@
             --panel-bg: rgba(15, 15, 25, 0.96);
             --panel-border: 1px solid rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff; --text-secondary: #8899aa;
-            --combo-color: #ffdf00; --path-pred: #ff4757; --path-soc: #1e90ff;
+            --combo-low: #00ff88; --combo-mid: #f1c40f; --combo-high: #ff3860;
         }
         :root[data-theme="light"] {
             --atp-color: #00a86b; --atp-glow: rgba(0, 168, 107, 0.2);
@@ -22,7 +22,6 @@
             --panel-bg: rgba(255, 255, 255, 0.98);
             --panel-border: 1px solid rgba(0, 0, 0, 0.1);
             --text-primary: #2c3e50; --text-secondary: #607d8b;
-            --combo-color: #f39c12; --path-pred: #c0392b; --path-soc: #2980b9;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -35,21 +34,28 @@
         #white-out { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:9999; transition: opacity 0.4s; }
 
         .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); backdrop-filter: blur(25px); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-bottom: var(--panel-border); z-index: 1000; }
-        
         #game-wrapper { display: grid; grid-template-columns: 350px 1fr 350px; width: 100%; max-width: 1800px; margin: 0 auto; gap: 20px; padding: 25px; padding-top: 100px; }
+
         @media (max-width: 1250px) { #game-wrapper { grid-template-columns: 1fr; padding: 15px; padding-top: 110px; } .main-display { order: -1; } }
 
         .panel { background: var(--panel-bg); border-radius: 20px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 20px;}
         .panel-header { font-family: 'Orbitron'; font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 1px;}
+        .main-display { position: relative; display: flex; flex-direction: column; align-items: center; }
         
-        .resource-hud { text-align: center; background: var(--panel-bg); padding: 20px; border-radius: 25px; border: var(--panel-border); box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 10; width: 100%; position: relative;}
+        .resource-hud { text-align: center; background: var(--panel-bg); padding: 20px; border-radius: 25px; border: var(--panel-border); box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 10; width: 100%; }
         .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.8em; filter: drop-shadow(0 0 8px currentColor); }
 
-        #combo-meter { position: absolute; right: 25px; top: 50%; transform: translateY(-50%); font-family: 'Orbitron'; text-align: right; opacity: 0; transition: opacity 0.3s; }
-        #combo-meter.active { opacity: 1; }
-        .combo-x { font-size: 1.6em; color: var(--combo-color); font-weight: bold; display: block; text-shadow: 0 0 10px var(--combo-color); }
+        #resonance-halo {
+            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+            font-family: 'Orbitron'; text-align: center; opacity: 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 30px;
+            border: 2px solid var(--combo-low); box-shadow: 0 0 15px var(--combo-low);
+        }
+        #resonance-halo.active { opacity: 1; top: -75px; }
+        .combo-x { font-size: 1.6em; color: white; font-weight: bold; }
+        .combo-label { font-size: 0.55em; color: var(--text-secondary); display: block; letter-spacing: 2px; margin-bottom: -2px;}
 
-        #specimen-container { position: relative; width: 260px; height: 260px; margin: 30px auto; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid var(--atp-color); box-shadow: 0 0 40px var(--atp-glow); transition: 0.2s; z-index: 5; }
+        #specimen-container { position: relative; width: 260px; height: 260px; margin: 80px auto 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid var(--atp-color); box-shadow: 0 0 40px var(--atp-glow); transition: 0.2s; z-index: 5; }
         #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.05s; }
         #specimen.singularity { font-size: 25px; color: #fff; text-shadow: 0 0 20px #fff, 0 0 40px var(--atp-color); }
 
@@ -57,13 +63,10 @@
         button { font-family: 'Orbitron'; font-size: 0.7em; padding: 12px; border-radius: 8px; border: none; cursor: pointer; background: var(--atp-color); color: #000; font-weight: bold; min-width: 90px; }
         button:disabled { opacity: 0.2; cursor: not-allowed; }
 
-        @keyframes ripple { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2); opacity: 0; } }
+        @keyframes ripple { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2.3); opacity: 0; } }
         .ripple { position: absolute; width: 100%; height: 100%; border: 2px solid var(--atp-color); border-radius: 50%; pointer-events: none; animation: ripple 0.5s ease-out forwards; }
         
-        @keyframes cosmic-wave { 0% { transform: scale(0.5); opacity: 1; border-width: 20px; } 100% { transform: scale(5); opacity: 0; border-width: 0px; } }
-        .cosmic-burst { position: absolute; top: 50%; left: 50%; width: 200px; height: 200px; margin-left: -100px; margin-top: -100px; border-radius: 50%; border: 10px solid #fff; pointer-events: none; z-index: 1; animation: cosmic-wave 1s forwards; mix-blend-mode: screen; }
-
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 9000; padding: 20px; align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.96); z-index: 9000; padding: 20px; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .modal-content { max-width: 700px; background: #111; padding: 30px; border-radius: 24px; border: 1px solid var(--atp-color); text-align: center; }
         #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: width 0.3s;}
     </style>
@@ -78,95 +81,72 @@
         UNI: <span id="uni-val" style="color:gold">1</span> | ERA: <span id="era-val">VOID</span>
     </div>
     <div style="display:flex; gap:10px;">
-        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid var(--text-secondary); color:var(--text-secondary); min-width:auto;">ARCHIVE</button>
+        <button id="mute-btn" onclick="toggleMute()" style="background:none; border:1px solid var(--text-secondary); color:var(--text-secondary); min-width:auto;">🔊</button>
+        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid var(--text-secondary); color:var(--text-secondary); min-width:auto;">ARC</button>
         <button onclick="resetGame()" style="min-width:auto; background:var(--danger-color); color:#fff;">RESET</button>
     </div>
 </div>
 
-<div id="path-modal" class="modal">
-    <div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;">
-        <div class="panel" style="max-width: 320px; border-color: var(--path-pred);" onclick="selectPath('predatory')">
-            <h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2>
-            <p>Solo hunter. Massive click multiplier.</p>
-            <button style="background:var(--path-pred); width:100%;">EVOLVE</button>
-        </div>
-        <div class="panel" style="max-width: 320px; border-color: var(--path-soc);" onclick="selectPath('social')">
-            <h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2>
-            <p>Unified colony. Massive passive automation.</p>
-            <button style="background:var(--path-soc); width:100%;">EVOLVE</button>
-        </div>
-    </div>
-</div>
-
-<div id="offline-modal" class="modal"><div class="modal-content">
-    <h2 style="font-family:'Orbitron'; color:gold;">RECONNECTED</h2>
-    <div id="offline-report" style="margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;"></div>
-    <button onclick="toggleModal('offline-modal')" style="width:100%;">RESUME</button>
-</div></div>
-
-<div id="archive-modal" class="modal"><div class="modal-content" style="max-width: 1000px;">
-    <h1 style="font-family:'Orbitron';">ARCHIVE</h1>
-    <div id="specimen-history" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; max-height:60vh; overflow-y:auto;"></div>
-    <button onclick="toggleModal('archive-modal')" style="margin-top: 20px;">CLOSE</button>
-</div></div>
-
-<div id="prestige-modal" class="modal"><div class="modal-content">
-    <h1 style="font-family:'Orbitron'; color:gold;">BIG BANG</h1>
-    <h2 id="next-uni-text" style="color:var(--atp-color)">Universe Level 2</h2>
-    <button onclick="triggerBigBang()" style="background:gold; width:100%; color:#000;">RECREATE REALITY</button>
-</div></div>
+<div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Solo hunter. Focus on click power.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Unified colony. Focus on automation.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
+<div id="offline-modal" class="modal"><div class="modal-content"><h2 style="font-family:'Orbitron'; color:gold;">RECONNECTED</h2><div id="offline-report" style="margin:20px 0; padding:20px; background:rgba(255,255,255,0.05); border-radius:15px;"></div><button onclick="toggleModal('offline-modal')" style="width:100%;">RESUME</button></div></div>
+<div id="archive-modal" class="modal"><div class="modal-content" style="max-width:1000px;"><h1 style="font-family:'Orbitron';">ARCHIVE</h1><div id="specimen-history" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; max-height:60vh; overflow-y:auto;"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px;">CLOSE</button></div></div>
+<div id="prestige-modal" class="modal"><div class="modal-content"><h1 style="font-family:'Orbitron'; color:gold;">BIG BANG</h1><h2 id="next-uni-text" style="color:var(--atp-color)">Universe Level 2</h2><button onclick="triggerBigBang()" style="background:gold; width:100%; color:#000;">RECREATE REALITY</button></div></div>
 
 <div id="game-wrapper">
     <div class="panel"><div class="panel-header" id="phys-title">Physical Evolution</div><div id="phys-upgrades"></div></div>
-
-    <div class="main-display" id="echo-chamber">
+    <div class="main-display">
         <div class="resource-hud">
-            <div id="combo-meter">
-                <span class="combo-label">RESONANCE</span>
-                <span class="combo-x" id="combo-val">x1.0</span>
-            </div>
             <div style="display:flex; justify-content:space-around; width: 100%;">
-                <div>
-                    <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
-                    <div id="atp-label" style="font-size:0.6em; font-family:'Orbitron';">Potential</div>
-                    <div style="font-size:0.7em; color:var(--text-secondary);" id="atp-ps">+0/s</div>
-                </div>
-                <div>
-                    <div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div>
-                    <div id="dna-label" style="font-size:0.6em; font-family:'Orbitron';">Structure</div>
-                    <div style="font-size:0.7em; color:var(--text-secondary);" id="dna-ps">+0/s</div>
-                </div>
+                <div><div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div><div id="atp-label" style="font-size:0.6em; font-family:'Orbitron';">Potential</div><div style="font-size:0.7em; color:var(--text-secondary);" id="atp-ps">+0/s</div></div>
+                <div><div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div><div id="dna-label" style="font-size:0.6em; font-family:'Orbitron';">Structure</div><div style="font-size:0.7em; color:var(--text-secondary);" id="dna-ps">+0/s</div></div>
             </div>
         </div>
-        <div id="specimen-container"><div id="specimen" class="singularity" onclick="handleClick()">●</div></div>
+        <div id="specimen-container">
+            <div id="resonance-halo"><span class="combo-label">RESONANCE</span><span class="combo-x" id="combo-val">x1.0</span></div>
+            <div id="specimen" class="singularity" onclick="handleClick()">●</div>
+        </div>
         <div style="text-align:center; width: 100%;">
             <h2 id="stage-name" style="font-family:'Orbitron'; margin:0; font-size:1.2em;">Singularity</h2>
             <div style="height:8px; background:rgba(0,0,0,0.4); border-radius:4px; margin-top:10px; overflow:hidden;"><div id="progress-fill"></div></div>
             <p id="stage-desc" style="font-size:0.75em; color:var(--text-secondary); margin-top:10px; font-family:'Orbitron'; font-style:italic;"></p>
         </div>
     </div>
-
     <div class="panel"><div class="panel-header" style="color:var(--dna-color)">Complexity Research</div><div id="dna-upgrades"></div></div>
 </div>
 
 <script>
-    const STORAGE_KEY = 'evo_master_v24';
+    // --- AUDIO ENGINE ---
+    let audioCtx = null;
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    
+    function playSfx(freq, type, decay, vol = 0.1) {
+        if (state.muted || !audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + decay);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + decay);
+    }
+
+    const sfx = {
+        tap: () => playSfx(150 + (state.combo * 50), 'sine', 0.1, 0.05),
+        buy: () => playSfx(880, 'triangle', 0.3, 0.08),
+        evo: () => {
+            playSfx(100, 'sawtooth', 1.5, 0.2);
+            playSfx(440, 'sine', 1.0, 0.1);
+        }
+    };
+
+    // --- GAME LOGIC ---
+    const STORAGE_KEY = 'evo_sonic_v27';
     const INITIAL_STATE = {
-        uni: 1, atp: 0, dna: 0, total: 0, stage: 0,
-        atpRate: 0, dnaRate: 0, multi: 1, click: 1,
-        combo: 1, lastClick: Date.now(), entropy: 0, path: null, heartbeat: Date.now(),
-        archive: [],
+        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
+        combo: 1, lastClick: Date.now(), entropy: 0, path: null, theme: 'dark', heartbeat: Date.now(), archive: [], muted: false,
         upgrades: {
-            phys: [
-                { name: "Singularity Force", cost: 10, addClick: 1, count: 0 },
-                { name: "Quantum Spark", cost: 50, r: 2, count: 0 },
-                { name: "Hadron Fusion", cost: 400, r: 20, count: 0 },
-                { name: "Atomic Bonding", cost: 2500, r: 100, count: 0 }
-            ],
-            dna: [
-                { name: "Data Points", cost: 25, r: 0.5, count: 0 },
-                { name: "Sync Multiplier", cost: 600, m: 0.5, count: 0 }
-            ]
+            phys: [{ name: "Singularity Force", cost: 10, addClick: 1, count: 0 }, { name: "Quantum Spark", cost: 60, r: 3, count: 0 }, { name: "Hadron Fusion", cost: 500, r: 25, count: 0 }],
+            dna: [{ name: "Data Points", cost: 30, r: 0.8, count: 0 }, { name: "Sync Multiplier", cost: 750, m: 0.5, count: 0 }]
         }
     };
 
@@ -174,15 +154,19 @@
         { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density." },
         { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks coalesce." },
         { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools." },
-        { name: "Molecule", emoji: "🧪", goal: 200000, era: "MOLECULAR", desc: "Chemical bonds form." },
-        { name: "Protein", emoji: "🧬", goal: 1000000, era: "CHEMICAL", desc: "Organic chains." },
-        { name: "DNA Strand", emoji: "🌀", goal: 5000000, era: "GENETIC", desc: "The code of life." },
-        { name: "Protocell", emoji: "🧫", goal: 20000000, era: "BIOLOGICAL", desc: "Life's boundary." },
-        { name: "Consciousness", emoji: "🧠", goal: 100000000, era: "COGNITIVE", desc: "Self-awareness." },
-        { name: "God-Mind", emoji: "👁️", goal: 1000000000, era: "TRANSCENDENT", desc: "Cosmic unity." }
+        { name: "Molecule", emoji: "🧪", goal: 200000, era: "MOLECULAR", desc: "Bonds form." },
+        { name: "Protocell", emoji: "🧫", goal: 10000000, era: "BIOLOGICAL", desc: "Life emerges." },
+        { name: "Consciousness", emoji: "🧠", goal: 500000000, era: "COGNITIVE", desc: "Self-awareness." }
     ];
 
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
+
+    function toggleMute() {
+        state.muted = !state.muted;
+        document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊";
+        initAudio();
+        saveGame();
+    }
 
     function toggleModal(id) {
         const m = document.getElementById(id);
@@ -191,6 +175,8 @@
     }
 
     function handleClick() {
+        initAudio();
+        sfx.tap();
         const now = Date.now();
         state.combo = (now - state.lastClick < 1000) ? Math.min(10.0, state.combo + 0.1) : 1.1;
         state.lastClick = now;
@@ -210,6 +196,7 @@
         const u = state.upgrades[type][i];
         const cur = type === 'phys' ? 'atp' : 'dna';
         if (state[cur] >= u.cost) {
+            sfx.buy();
             state[cur] -= u.cost; u.count++;
             if (u.r) type === 'phys' ? state.atpRate += u.r : state.dnaRate += u.r;
             if (u.m) state.multi += u.m;
@@ -226,11 +213,16 @@
         document.getElementById('dna-display').innerText = formatNum(state.dna);
         document.getElementById('atp-ps').innerText = `+${formatNum(state.atpRate * state.multi * bonus * eff)}/s`;
         document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * bonus * eff)}/s`;
-        
         document.getElementById('entropy-filter').style.opacity = state.entropy * 0.95;
         document.getElementById('uni-val').innerText = state.uni;
-        document.getElementById('combo-meter').className = state.combo > 1.2 ? 'active' : '';
+
+        const halo = document.getElementById('resonance-halo');
+        halo.className = state.combo > 1.2 ? 'active' : '';
         document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
+        
+        const colors = state.combo < 3 ? 'low' : (state.combo < 7 ? 'mid' : 'high');
+        halo.style.borderColor = `var(--combo-${colors})`;
+        halo.style.boxShadow = `0 0 20px var(--combo-${colors})`;
 
         const stage = stages[state.stage];
         const spec = document.getElementById('specimen');
@@ -244,17 +236,15 @@
         document.getElementById('progress-fill').style.width = Math.min(((state.total-prev)/(stage.goal-prev))*100, 100) + "%";
 
         if (state.total >= stage.goal && state.stage < stages.length - 1) {
+            sfx.evo();
             if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
             state.stage++;
-            const burst = document.createElement('div'); burst.className = 'cosmic-burst';
-            document.querySelector('.main-display').appendChild(burst);
-            setTimeout(() => burst.remove(), 1000);
-            if(state.stage === 6 && !state.path) toggleModal('path-modal');
+            if(state.stage === 4 && !state.path) toggleModal('path-modal');
         }
 
         if (state.stage === stages.length - 1 && state.atp >= stages[state.stage].goal) toggleModal('prestige-modal');
 
-        const isBio = state.stage >= 6;
+        const isBio = state.stage >= 4;
         document.getElementById('atp-label').innerText = isBio ? "ATP" : "Potential";
         document.getElementById('dna-label').innerText = isBio ? "DNA" : "Structure";
         state.upgrades.phys[0].name = isBio ? "God Power" : "Singularity Force";
@@ -287,7 +277,7 @@
             const a = (state.atpRate * state.multi * bonus) * sec;
             const d = (state.dnaRate * bonus) * sec;
             state.atp += a; state.dna += d; state.total += a;
-            document.getElementById('offline-report').innerHTML = `+${formatNum(a)} Energy<br>+${formatNum(d)} Structure<br>Time: ${sec}s`;
+            document.getElementById('offline-report').innerHTML = `+${formatNum(a)} Energy<br>+${formatNum(d)} Structure<br>Stasis: ${sec}s`;
             toggleModal('offline-modal');
         }
     }
@@ -307,10 +297,11 @@
     }
 
     function selectPath(p) { state.path = p; toggleModal('path-modal'); }
-    function triggerBigBang() { state = INITIAL_STATE; state.uni++; saveGame(); location.reload(); }
+    function triggerBigBang() { const n = state.uni + 1; state = INITIAL_STATE; state.uni = n; saveGame(); location.reload(); }
     function saveGame() { state.heartbeat = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function resetGame() { localStorage.clear(); location.reload(); }
 
+    document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊";
     renderUpgrades(); processOffline(); updateUI();
     setInterval(saveGame, 2000);
 </script>
