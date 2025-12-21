@@ -20,9 +20,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Roboto', sans-serif; background: var(--bg-color); color: var(--text-primary); margin: 0; min-height: 100vh; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; }
         
-        #entropy-filter { position: fixed; top:0; left:0; width:100%; height:100%; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
-        #white-out { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:9999; transition: opacity 0.5s; }
-
+        /* Reveal Transition Class */
         .reveal-target { transition: opacity 0.8s ease; }
 
         .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); backdrop-filter: blur(25px); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-bottom: var(--panel-border); z-index: 1000; }
@@ -30,25 +28,55 @@
         @keyframes bunnyPulse { 0% { transform: scale(1); filter: drop-shadow(0 0 2px gold); } 50% { transform: scale(1.3); filter: drop-shadow(0 0 10px gold); } 100% { transform: scale(1); filter: drop-shadow(0 0 2px gold); } }
         .bunny-link { font-size: 2em; text-decoration: none; display: none; animation: bunnyPulse 2s infinite ease-in-out; margin-left: 15px; cursor: pointer; }
 
-        #game-wrapper { display: grid; grid-template-columns: 350px 1fr 350px; width: 100%; max-width: 1800px; margin: 0 auto; gap: 20px; padding: 25px; padding-top: 100px; }
-        @media (max-width: 1250px) { #game-wrapper { grid-template-columns: 1fr; padding: 15px; padding-top: 110px; } .main-display { order: -1; } }
+        /* --- UPDATED CENTERING LAYOUT --- */
+        #game-wrapper { 
+            display: grid;
+            /* Fixed side columns, flexible but constrained middle column */
+            grid-template-columns: 350px minmax(400px, 800px) 350px;
+            justify-content: center; /* Centers the entire grid horizontally */
+            align-items: start; /* Aligns panels to the top */
+            width: 100%;
+            margin: 0 auto; 
+            gap: 30px; 
+            padding: 30px; 
+            padding-top: 110px; 
+        }
 
-        .panel { background: var(--panel-bg); border-radius: 20px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 20px; transition: opacity 0.5s, transform 0.5s; }
+        /* Mobile/Tablet Layout Centering */
+        @media (max-width: 1250px) { 
+            #game-wrapper { 
+                grid-template-columns: 1fr; /* Single column */
+                justify-items: center; /* Centers items within the single column */
+                padding: 20px; 
+                padding-top: 110px; 
+                gap: 25px;
+            } 
+            .main-display { order: -1; } 
+            /* Constrain width on mobile so panels look centered, not stretched */
+            .panel, .main-display {
+                width: 100%;
+                max-width: 550px; 
+            }
+            .resource-hud { gap: 10px; } /* Tighter HUD on smaller screens */
+        }
+
+        .panel { background: var(--panel-bg); border-radius: 20px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 0; transition: opacity 0.5s, transform 0.5s; width: 100%; }
         #dna-panel { border-color: var(--dna-color); }
         .panel-header { font-family: 'Orbitron'; font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 1px;}
-        .main-display { position: relative; display: flex; flex-direction: column; align-items: center; }
+        .main-display { position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; }
         
         /* ANTI-SHAKE HUD */
         .resource-hud { 
             text-align: center; background: var(--panel-bg); padding: 20px; border-radius: 25px; border: var(--panel-border); 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 10; width: 100%; display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 10; width: 100%; display: flex; justify-content: space-around; align-items: center; gap: 20px;
         }
+        /* Fixed width boxes to prevent shaking */
         .res-box { width: 180px; flex-shrink: 0; }
         .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.8em; filter: drop-shadow(0 0 8px currentColor); white-space: nowrap; }
 
         #transmute-btn { 
-            width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--dna-color); 
-            background: rgba(188, 19, 254, 0.1); color: var(--dna-color); font-size: 1.2em; 
+            width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--dna-color); 
+            background: rgba(188, 19, 254, 0.1); color: var(--dna-color); font-size: 1.2em; flex-shrink: 0;
             cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;
         }
         #transmute-btn:not(:disabled):hover { background: var(--dna-color); color: #fff; box-shadow: 0 0 15px var(--dna-glow); }
@@ -57,7 +85,7 @@
         #resonance-halo { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; text-align: center; opacity: 0; transition: 0.4s; background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 30px; border: 2px solid var(--combo-low); z-index: 10; }
         #resonance-halo.active { opacity: 1; top: -75px; }
 
-        #specimen-container { position: relative; width: 260px; height: 260px; margin: 80px auto 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid var(--atp-color); box-shadow: 0 0 40px var(--atp-glow); transition: 0.5s; z-index: 5; }
+        #specimen-container { position: relative; width: 260px; height: 260px; margin: 60px auto 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid var(--atp-color); box-shadow: 0 0 40px var(--atp-glow); transition: 0.5s; z-index: 5; }
         #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; will-change: transform; }
         #specimen.singularity { font-size: 25px; color: #fff; text-shadow: 0 0 20px #fff, 0 0 40px var(--atp-color); }
 
@@ -71,6 +99,10 @@
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.96); z-index: 9000; padding: 20px; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: width 0.3s;}
         .hidden-panel { opacity: 0; pointer-events: none; transform: translateY(20px); height: 0; overflow: hidden; margin: 0; padding: 0; }
+        
+        /* White-out and Filter */
+        #entropy-filter { position: fixed; top:0; left:0; width:100%; height:100%; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
+        #white-out { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:9999; transition: opacity 0.5s; }
     </style>
 </head>
 <body>
@@ -88,7 +120,7 @@
     </div>
 </div>
 
-<div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Solo focus.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Passive focus.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
+<div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Solo Hunter focus.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Mass Connectivity focus.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
 <div id="archive-modal" class="modal"><div class="panel" style="max-width:1000px; text-align:center;"><h1 style="font-family:'Orbitron';">ARCHIVE</h1><div id="specimen-history" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; max-height:60vh; overflow-y:auto;"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px;">CLOSE</button></div></div>
 <div id="prestige-modal" class="modal"><div class="panel" style="text-align:center;"><h1 style="font-family:'Orbitron'; color:gold;">BIG BANG</h1><button onclick="triggerBigBang()" style="background:gold; width:100%; color:#000;">RECREATE REALITY</button></div></div>
 
@@ -102,7 +134,7 @@
                 <div id="atp-label" style="font-size:0.6em; font-family:'Orbitron';">Potential</div>
                 <div style="font-size:0.7em; color:var(--text-secondary);" id="atp-ps">+0/s</div>
             </div>
-            <button id="transmute-btn" onclick="transmute()">⇄</button>
+            <button id="transmute-btn" onclick="transmute()" title="Convert Energy to Structure">⇄</button>
             <div class="res-box">
                 <div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div>
                 <div id="dna-label" style="font-size:0.6em; font-family:'Orbitron';">Structure</div>
@@ -110,7 +142,7 @@
             </div>
         </div>
         <div id="specimen-container">
-            <div id="resonance-halo"><span id="combo-val">x1.0</span></div>
+            <div id="resonance-halo"><span class="combo-label">RESONANCE</span><span class="combo-x" id="combo-val">x1.0</span></div>
             <div id="specimen" class="singularity" onclick="handleClick()">●</div>
         </div>
         <div style="text-align:center; width: 100%;">
@@ -141,12 +173,13 @@
         osc1.start(); osc2.start();
     }
     function playSfx(f, t, d, v=0.05) { if(state.muted || !audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
+    function playEvolutionChime() { if(state.muted || !audioCtx) return; [440, 554.37, 659.25, 880].forEach((freq, i) => { setTimeout(() => playSfx(freq, 'sine', 0.6, 0.1), i * 100); }); }
 
-    // --- LOGIC (REBUILT ON ORIGINAL) ---
-    const STORAGE_KEY = 'evo_metric_vORIGINAL';
+    // --- LOGIC ---
+    const STORAGE_KEY = 'evo_metric_centered_v1';
     const INITIAL_STATE = {
         uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
-        combo: 1, lastClick: Date.now(), entropy: 0, path: null, theme: 'dark', 
+        combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
         lastAnchor: Date.now(), archive: [], muted: false, currentRotation: 0, clickSpinVelocity: 0,
         upgrades: {
             phys: [
@@ -155,8 +188,9 @@
                 { id: 'p3', name: "Hadron Fusion", cost: 600, r: 35, count: 0, era: 2 }
             ],
             dna: [
-                { id: 'd1', name: "Data Points", cost: 200000, r: 50, count: 0, era: 5, currency: 'atp' },
-                { id: 'd2', name: "Sync Multiplier", cost: 1000, m: 2.5, count: 0, era: 7 }
+                // Idle buff: Increased base rate and multiplier cost for better idle scaling
+                { id: 'd1', name: "Data Points", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
+                { id: 'd2', name: "Sync Multiplier", cost: 2000, m: 2.0, count: 0, era: 7 }
             ]
         }
     };
@@ -168,25 +202,61 @@
         { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form." },
         { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life chemistry." },
         { name: "Protein", emoji: "🧬", goal: 10000000, era: "CHEMICAL", desc: "Amino chains." },
-        { name: "Genetic Code", emoji: "🌀", goal: 50000000, era: "GENETIC", desc: "Instruction sets." }
+        { name: "Genetic Code", emoji: "🌀", goal: 50000000, era: "GENETIC", desc: "Instruction sets." },
+        { name: "Protocell", emoji: "🧫", goal: 200000000, era: "BIOLOGICAL", desc: "Life's boundary." },
+        { name: "Bacteria", emoji: "🦠", goal: 1000000000, era: "BIOLOGICAL", desc: "Binary fission." },
+        { name: "Eukaryote", emoji: "🍄", goal: 5000000000, era: "BIOLOGICAL", desc: "Complex cells." },
+        { name: "Multicellular", emoji: "🌱", goal: 25000000000, era: "MACRO", desc: "Cooperation." },
+        { name: "Complex Organism", emoji: "🐟", goal: 100000000000, era: "MACRO", desc: "Sensory organs." },
+        { name: "Neural Network", emoji: "🕸️", goal: 500000000000, era: "COGNITIVE", desc: "Impulses." },
+        { name: "Consciousness", emoji: "🧠", goal: 2000000000000, era: "COGNITIVE", desc: "Self-awareness." },
+        { name: "Tool Use", emoji: "🔨", goal: 10000000000000, era: "TECHNOLOGICAL", desc: "Fire and iron." },
+        { name: "Industrial Era", emoji: "⚙️", goal: 50000000000000, era: "TECHNOLOGICAL", desc: "Steam and steel." },
+        { name: "Digital Age", emoji: "💻", goal: 250000000000000, era: "TECHNOLOGICAL", desc: "Silicon hearts." },
+        { name: "AI Singularity", emoji: "🌌", goal: 1000000000000000, era: "TRANSCENDENT", desc: "Digital peak." },
+        { name: "Planetary Mind", emoji: "🌍", goal: 10000000000000000, era: "TRANSCENDENT", desc: "Unified thought." },
+        { name: "Dyson Swarm", emoji: "☀️", goal: 100000000000000000, era: "TRANSCENDENT", desc: "Sun capture." },
+        { name: "Galactic Bunny-Mind", emoji: "🐰", goal: 1000000000000000000, era: "CELESTIAL", desc: "Fluffy Unity." },
+        { name: "Universal Bunny-larity", emoji: "🐇", goal: 10000000000000000000, era: "TRANSCENDENT", desc: "The loop complete." }
     ];
+
+    const upgradeLibrary = {
+        phys: [
+            { id: 'pa1', name: "Neutrino Pulse", cost: 150, r: 8, era: 1 },
+            { id: 'pa2', name: "Electron Shell", cost: 1200, r: 50, era: 2 },
+            { id: 'p4', name: "Atomic Bonding", cost: 6000, r: 250, era: 3 },
+            { id: 'p5', name: "Amino Chains", cost: 100000, r: 5000, era: 5 },
+            { id: 'pa6', name: "Solar Synthesis", cost: 2000000, r: 100000, era: 8 },
+            { id: 'p12', name: "Star Eater", cost: 50000000000000, r: 2000000000000, era: 21 }
+        ],
+        dna: [
+            { id: 'da1', name: "Membrane Logic", cost: 500000, r: 5, era: 6, currency: 'atp' },
+            { id: 'd3', name: "Cellular Logic", cost: 25000, r: 100, era: 8 },
+            { id: 'da2', name: "Synaptic Jump", cost: 1000000, m: 3.0, era: 12 },
+            { id: 'da5', name: "Bunny Wisdom", cost: 20000000000, r: 1000000, era: 18 }
+        ]
+    };
 
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
 
+    // Manual Transmute Function (only triggered by button click)
     function transmute() {
         if (state.atp >= 100000) {
+            playSfx(1200, 'triangle', 0.5, 0.1);
             const sacrifice = state.atp * 0.2;
-            state.atp -= sacrifice; state.dna += (sacrifice / 500); updateUI();
+            const gain = sacrifice / 500;
+            state.atp -= sacrifice; state.dna += gain; updateUI();
         }
     }
 
     function handleClick() {
         initAudio(); playSfx(150+(state.combo*50), 'sine', 0.1);
         const now = Date.now(); state.combo = (now - state.lastClick < 1000) ? Math.min(10.0, state.combo + 0.1) : 1.1;
-        state.lastClick = now;
-        const b = Math.pow(2, state.uni-1), gain = state.click * state.multi * state.combo * b;
+        state.lastClick = now; if (state.entropy > 0.3) state.entropy = Math.max(0, state.entropy - 0.1);
+        const b = Math.pow(2, state.uni-1), gain = state.click * state.multi * state.combo * b * (1 - state.entropy);
         state.atp += gain; state.total += gain; state.clickSpinVelocity = 25;
         
+        // Path-dependent ripple color
         const r = document.createElement('div'); r.className='ripple';
         if(state.path) r.style.borderColor = `var(--path-${state.path})`;
         document.getElementById('specimen-container').appendChild(r);
@@ -196,32 +266,43 @@
     function buy(type, i) {
         const u = state.upgrades[type][i], cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
         if (state[cur] >= u.cost) {
-            state[cur] -= u.cost; u.count++;
+            playSfx(880, 'triangle', 0.2); state[cur] -= u.cost; u.count++;
             if (u.r) type === 'phys' ? state.atpRate += u.r : state.dnaRate += u.r;
             if (u.m) state.multi += u.m;
             if (u.addClick) state.click += u.addClick;
-            u.cost = Math.floor(u.cost * 1.55); renderUpgrades(); updateUI();
+            u.cost = Math.floor(u.cost * 1.55); renderUpgrades(); updateUI(); saveGame();
         }
     }
 
+    function checkDynamicUpgrades() {
+        ['phys', 'dna'].forEach(type => { upgradeLibrary[type].forEach(libU => { if (state.stage >= libU.era && !state.upgrades[type].find(u => u.id === libU.id)) { state.upgrades[type].push({...libU, count: 0}); } }); });
+    }
+
     function updateUI() {
-        const b = Math.pow(2, state.uni-1);
+        const b = Math.pow(2, state.uni-1), eff = (1 - state.entropy);
         document.getElementById('atp-display').innerText = formatNum(state.atp);
         document.getElementById('dna-display').innerText = formatNum(state.dna);
-        document.getElementById('atp-ps').innerText = `+${formatNum(state.atpRate * state.multi * b)}/s`;
-        document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b)}/s`;
+        document.getElementById('atp-ps').innerText = `+${formatNum(state.atpRate * state.multi * b * eff)}/s`;
+        document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b * eff)}/s`;
+        document.getElementById('entropy-filter').style.opacity = state.entropy * 0.95;
         document.getElementById('uni-val').innerText = state.uni;
         document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
         
-        if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
-        document.getElementById('transmute-btn').disabled = state.atp < 100000;
-        document.getElementById('transmute-btn').style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
+        // Transmute Button Logic
+        const tBtn = document.getElementById('transmute-btn');
+        tBtn.disabled = state.atp < 100000;
+        tBtn.style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
 
+        // Path-dependent Halo and Container visuals
         const h = document.getElementById('resonance-halo'); h.className = state.combo > 1.2 ? 'active' : '';
         document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
         if (state.path) {
             document.getElementById('specimen-container').style.borderColor = `var(--path-${state.path})`;
             h.style.borderColor = `var(--path-${state.path})`;
+        } else {
+            const c = state.combo < 3 ? 'low' : (state.combo < 7 ? 'mid' : 'high');
+            h.style.borderColor = `var(--combo-${c})`;
+            document.getElementById('specimen-container').style.borderColor = `var(--atp-color)`;
         }
 
         const s = stages[state.stage], spec = document.getElementById('specimen');
@@ -234,47 +315,60 @@
         document.getElementById('progress-fill').style.width = Math.min(((state.total-prev)/(s.goal-prev))*100, 100) + "%";
         document.getElementById('progress-stats').innerText = `${formatNum(state.total - prev)} / ${formatNum(s.goal - prev)}`;
 
-        // REVEAL LOGIC
+        // REVEAL LOGIC: Opacity based on progress in Stage 0
         let opacity = state.stage === 0 ? Math.min(state.total / stages[0].goal, 1) : 1;
         document.querySelectorAll('.reveal-target').forEach(el => { el.style.opacity = opacity; el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; });
 
         if (state.total >= s.goal && state.stage < stages.length - 1) {
-            state.stage++; if(state.stage === 5 && !state.path) toggleModal('path-modal');
-            renderUpgrades();
+            document.getElementById('white-out').style.opacity = 0.6; setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
+            playEvolutionChime(); if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
+            state.stage++; if(state.stage === 7 && !state.path) toggleModal('path-modal');
+            checkDynamicUpgrades(); renderUpgrades();
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        
+        if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
+        if (state.stage === stages.length - 1 && state.atp >= stages[state.stage].goal) toggleModal('prestige-modal');
+        document.querySelectorAll('button[data-currency]').forEach(btn => btn.disabled = state[btn.dataset.currency] < btn.dataset.cost);
     }
 
     function formatNum(n) {
         if(n < 1000000) return Math.floor(n).toLocaleString();
-        const s = ["M", "B", "T", "Q", "Sx"];
+        const s = ["M", "B", "T", "Q", "Sx", "Sp", "Oc", "No", "Dc"];
         const e = Math.floor(Math.log10(n) / 3) - 2;
         return (n / Math.pow(10, (e+2)*3)).toFixed(2) + s[e];
     }
 
     function animate() {
         const spec = document.getElementById('specimen');
-        let speed = 0.1 + ((state.combo - 1) * 0.2);
-        if (state.clickSpinVelocity > 0.1) { speed += state.clickSpinVelocity; state.clickSpinVelocity *= 0.92; }
-        state.currentRotation = (state.currentRotation + speed) % 360;
-        spec.style.transform = `rotate(${state.currentRotation}deg)`;
-        requestAnimationFrame(animate);
+        if (spec) {
+            let speed = 0.1 + ((state.combo - 1) * 0.2);
+            if (state.clickSpinVelocity > 0.1) { speed += state.clickSpinVelocity; state.clickSpinVelocity *= 0.92; } else { state.clickSpinVelocity = 0; }
+            state.currentRotation = (state.currentRotation + speed) % 360;
+            spec.style.transform = `rotate(${state.currentRotation}deg)`;
+        } requestAnimationFrame(animate);
     }
 
     setInterval(() => {
-        const b = Math.pow(2, state.uni-1);
-        state.atp += (state.atpRate * state.multi * b) / 10;
-        state.dna += (state.dnaRate * b) / 10;
-        state.total += (state.atpRate * state.multi * b) / 10;
-        updateUI();
+        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
+        state.entropy = Math.min(1, state.entropy + (0.0000011574 * (state.stage + 1)));
+        const b = Math.pow(2, state.uni-1), eff = (1 - state.entropy);
+        state.atp += (state.atpRate * state.multi * b * eff) / 10;
+        state.dna += (state.dnaRate * b * eff) / 10;
+        state.total += (state.atpRate * state.multi * b * eff) / 10;
+        state.lastAnchor = Date.now(); updateUI();
     }, 100);
 
-    function toggleModal(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
-    function renderUpgrades() { const r = (id, type) => { document.getElementById(id).innerHTML = state.upgrades[type].map((u, i) => `<div class="upgrade-card"><div><b>${u.name}</b><br><small>Lvl ${u.count}</small></div><button onclick="buy('${type}', ${i})">${formatNum(u.cost)}</button></div>`).join(''); }; r('phys-upgrades', 'phys'); r('dna-upgrades', 'dna'); }
+    function toggleModal(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; if(id === 'archive-modal') renderArchive(); }
+    function renderUpgrades() { const r = (id, type) => { document.getElementById(id).innerHTML = state.upgrades[type].map((u, i) => { const cur = u.currency || (type === 'phys' ? 'atp' : 'dna'); return `<div class="upgrade-card"><div><b>${u.name}</b><br><small>Lvl ${u.count}</small></div><button data-cost="${u.cost}" data-currency="${cur}" onclick="buy('${type}', ${i})">${formatNum(u.cost)}</button></div>`; }).join(''); }; r('phys-upgrades', 'phys'); r('dna-upgrades', 'dna'); }
+    function renderArchive() { document.getElementById('specimen-history').innerHTML = state.archive.map(i => `<div class="history-card"><b>${stages[i].emoji} ${stages[i].name}</b><br><small>${stages[i].era}</small></div>`).join(''); }
     function selectPath(p) { state.path = p; toggleModal('path-modal'); updateUI(); }
-    function toggleMute() { state.muted = !state.muted; document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊"; }
+    function toggleMute() { state.muted = !state.muted; document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊"; if(droneGain) droneGain.gain.setTargetAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime, 0.5); initAudio(); saveGame(); }
+    function triggerBigBang() { const n = state.uni + 1; state = INITIAL_STATE; state.uni = n; saveGame(); location.reload(); }
+    function saveGame() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-    renderUpgrades(); updateUI(); animate();
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { /* syncTime removed for brevity in this iteration but can be added back */ } else saveGame(); });
+    checkDynamicUpgrades(); renderUpgrades(); updateUI(); animate();
+    setInterval(saveGame, 2000);
 </script>
 </body>
 </html>
