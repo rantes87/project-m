@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Evolution: Master</title>
+    <title>Universal Evolution: No-Reset</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="dark"] {
@@ -80,8 +80,7 @@
     <div style="display:flex; gap:10px;">
         <button id="mute-btn" onclick="toggleMute()" style="background:none; border:1px solid var(--text-secondary); color:var(--text-secondary); min-width:auto;">🔊</button>
         <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid var(--text-secondary); color:var(--text-secondary); min-width:auto;">ARC</button>
-        <button onclick="resetGame()" style="min-width:auto; background:var(--danger-color); color:#fff;">RESET</button>
-    </div>
+        </div>
 </div>
 
 <div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Focus on click power.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Focus on automation.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
@@ -125,7 +124,7 @@
     function playEvolutionChime() { if(state.muted || !audioCtx) return; [440, 554.37, 659.25, 880].forEach((freq, i) => { setTimeout(() => playSfx(freq, 'sine', 0.6, 0.1), i * 100); }); }
 
     // --- GAME DATA ---
-    const STORAGE_KEY = 'evo_ultimate_master_v38';
+    const STORAGE_KEY = 'evo_noreset_v39';
     const INITIAL_STATE = {
         uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
         combo: 1, lastClick: Date.now(), entropy: 0, path: null, theme: 'dark', 
@@ -242,7 +241,11 @@
         document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b * eff)}/s`;
         document.getElementById('entropy-filter').style.opacity = state.entropy * 0.95;
         document.getElementById('uni-val').innerText = state.uni;
+
+        // Bunny Link Visibility
         document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
+
+        // Complexity Panel Visibility
         if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
 
         const h = document.getElementById('resonance-halo'); h.className = state.combo > 1.2 ? 'active' : '';
