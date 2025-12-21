@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Evolution: Perfected</title>
+    <title>Universal Evolution: Perfected Build</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="dark"] {
             --atp-color: #00ff88; --atp-glow: rgba(0, 255, 136, 0.4);
             --dna-color: #bc13fe; --dna-glow: rgba(188, 19, 254, 0.4);
             --danger-color: #ff3860; --bg-color: #050508;
-            --panel-bg: rgba(15, 15, 25, 0.96);
-            --panel-border: 1px solid rgba(255, 255, 255, 0.1);
+            --panel-bg: rgba(12, 12, 20, 0.9);
+            --panel-border: 1px solid rgba(255, 255, 255, 0.08);
             --text-primary: #ffffff; --text-secondary: #8899aa;
             --combo-low: #00ff88; --combo-mid: #f1c40f; --combo-high: #ff3860;
             --path-pred: #ff3860; --path-soc: #00d1ff;
@@ -34,7 +34,9 @@
         #entropy-filter { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
         #white-out { position: fixed; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
 
-        .reveal-target { transition: opacity 0.8s ease; }
+        /* Smoother expansion during reveal */
+        .reveal-target { transition: opacity 0.8s ease, transform 0.8s ease; transform: scale(0.98); }
+        .revealed { transform: scale(1); }
 
         /* --- LAYOUT ENGINE --- */
         #game-wrapper { 
@@ -54,8 +56,8 @@
                 display: grid;
                 grid-template-columns: 350px 1fr 350px;
                 height: 100vh;
-                overflow: hidden;
                 padding-top: 110px;
+                overflow: hidden;
                 align-items: start;
             }
             .panel { height: 78vh !important; }
@@ -78,39 +80,59 @@
             }
         }
 
-        .panel { background: var(--panel-bg); border-radius: 24px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
-        .panel-header { font-family: 'Orbitron'; font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 2px;}
+        .panel { 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(12px);
+            border-radius: 24px; 
+            border: var(--panel-border); 
+            padding: 22px; 
+            box-shadow: 0 15px 45px rgba(0,0,0,0.7), inset 0 0 20px rgba(255,255,255,0.02); 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .panel-header { font-family: 'Orbitron'; font-size: 0.75em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 3px; font-weight: 700; }
 
-        /* HUD & ANTI-SHAKE */
+        /* HUD & STABILITY */
         .resource-hud { 
-            background: var(--panel-bg); padding: 15px 30px; border-radius: 50px; border: var(--panel-border); 
-            display: flex; justify-content: space-around; align-items: center; gap: 20px; width: 100%; max-width: 600px;
+            background: var(--panel-bg); 
+            backdrop-filter: blur(10px);
+            padding: 15px 30px; 
+            border-radius: 50px; 
+            border: var(--panel-border); 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            gap: 20px; 
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
         .res-box { width: 180px; text-align: center; flex-shrink: 0; }
-        .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.5em; white-space: nowrap; filter: drop-shadow(0 0 8px currentColor); }
+        .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.5em; white-space: nowrap; filter: drop-shadow(0 0 5px currentColor); letter-spacing: -0.5px; }
 
         @media (max-width: 600px) {
             .res-box { width: auto; flex: 1; }
-            .res-val { font-size: 1.2em; }
-            .resource-hud { padding: 10px 20px; gap: 10px; }
+            .res-val { font-size: 1.15em; }
+            .resource-hud { padding: 10px 18px; gap: 8px; }
         }
 
         /* BUTTON BRIGHTENING LOGIC */
         button { 
-            font-family: 'Orbitron'; font-size: 0.7em; padding: 10px 15px; border-radius: 8px; border: none; 
-            cursor: pointer; background: var(--atp-color); font-weight: bold; 
-            transition: all 0.3s ease;
-            filter: grayscale(1) opacity(0.3); /* Default dimmed state */
+            font-family: 'Orbitron'; font-size: 0.65em; padding: 10px 15px; border-radius: 8px; border: none; 
+            cursor: pointer; background: var(--atp-color); font-weight: 700; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: grayscale(1) opacity(0.25);
+            letter-spacing: 1px;
         }
         button:not(:disabled) { 
             filter: grayscale(0) opacity(1); 
-            box-shadow: 0 0 10px var(--atp-glow);
+            box-shadow: 0 0 15px var(--atp-glow);
         }
         
         #transmute-btn { 
-            width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--dna-color); 
+            width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--dna-color); 
             background: rgba(188, 19, 254, 0.1); color: var(--dna-color); font-size: 1.2em;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;
         }
         #transmute-btn:not(:disabled) { 
             background: var(--dna-color); color: #fff; 
@@ -118,9 +140,8 @@
             filter: grayscale(0) opacity(1);
         }
 
-        /* SPECIMEN DISPLAY - FIX APPLIED HERE */
+        /* SPECIMEN DISPLAY */
         .main-display { display: flex; flex-direction: column; align-items: center; width: 100%; }
-        
         #specimen-container { 
             position: relative; 
             width: 260px; height: 260px; 
@@ -128,33 +149,46 @@
             display: flex; justify-content: center; align-items: center; 
             border-radius: 50%; border: 2px solid var(--atp-color); 
             box-shadow: 0 0 40px var(--atp-glow);
-            transition: border-color 0.5s, box-shadow 0.5s; /* Only transition colors */
+            transition: border-color 0.5s, box-shadow 0.5s;
             z-index: 5; 
-            /* The container handles the rotation now */
             will-change: transform;
         }
-
-        #specimen { 
-            font-size: 90px; cursor: pointer; user-select: none; z-index: 6; 
-            /* Removed conflicting transform transition */
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy pulse */
-        }
-        #specimen:active { transform: scale(0.92); }
+        #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
+        #specimen:active { transform: scale(0.9); }
         #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
 
-        #resonance-halo { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; opacity: 0; transition: 0.4s; background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 30px; border: 2px solid var(--atp-color); pointer-events: none; }
-        #resonance-halo.active { opacity: 1; top: -75px; }
+        /* STRANGLED MULTIPLIER - Tight and Integrated */
+        #resonance-halo { 
+            position: absolute; 
+            top: -15px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-family: 'Orbitron'; 
+            font-size: 0.65em;
+            font-weight: 700;
+            opacity: 0; 
+            transition: 0.3s; 
+            background: var(--bg-color); 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            border: 2px solid var(--atp-color); 
+            box-shadow: 0 0 15px var(--atp-glow);
+            z-index: 20; 
+            pointer-events: none; 
+            white-space: nowrap; 
+        }
+        #resonance-halo.active { opacity: 1; }
 
-        .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: var(--panel-border); z-index: 1000; }
-        .bunny-link { font-size: 2em; text-decoration: none; display: none; animation: bunnyPulse 2s infinite ease-in-out; margin-left: 15px; cursor: pointer; }
-
-        .upgrade-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--atp-color); }
+        .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); backdrop-filter: blur(20px); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: var(--panel-border); z-index: 1000; }
+        
+        .upgrade-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--atp-color); border-top: 1px solid rgba(255,255,255,0.02); }
         
         .ripple { position: absolute; border: 2px solid var(--atp-color); border-radius: 50%; pointer-events: none; animation: ripple 0.6s ease-out forwards; }
-        @keyframes ripple { from { width: 0; height: 0; opacity: 1; } to { width: 300px; height: 300px; opacity: 0; } }
-        #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: 0.4s; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 20px; }
-        .modal-content { max-width: 600px; width: 100%; background: #111; padding: 30px; border-radius: 24px; border: 1px solid var(--atp-color); text-align: center; }
+        @keyframes ripple { from { width: 0; height: 0; opacity: 1; } to { width: 320px; height: 320px; opacity: 0; } }
+
+        #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: 0.4s; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(15px); padding: 20px; }
+        .modal-content { max-width: 600px; width: 100%; background: #0c0c14; padding: 30px; border-radius: 28px; border: 1px solid var(--atp-color); text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         .hidden-panel { opacity: 0 !important; pointer-events: none !important; }
     </style>
 </head>
@@ -164,12 +198,12 @@
 
 <div class="top-bar reveal-target">
     <div style="display:flex; align-items: center;">
-        <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing: 1px;">UNI: <span id="uni-val" style="color:gold">1</span> | ERA: <span id="era-val">VOID</span></div>
+        <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing: 1px; font-weight: 700;">UNI: <span id="uni-val" style="color:gold">1</span> | ERA: <span id="era-val">VOID</span></div>
         <a href="https://swift4prez.com" target="_blank" class="bunny-link" id="celestial-bunny">🐰</a>
     </div>
     <div style="display:flex; gap:10px;">
-        <button id="mute-btn" onclick="toggleMute()" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; font-size: 1.2em; filter:none; opacity:1;">🔊</button>
-        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.65em; border-radius: 6px; padding: 6px 12px; filter:none; opacity:1;">ARC</button>
+        <button id="mute-btn" onclick="toggleMute()" style="background:none; border:1px solid rgba(255,255,255,0.1); color:white; font-size: 1.2em; filter:none; opacity:1;">🔊</button>
+        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:white; font-size:0.6em; border-radius: 6px; padding: 6px 12px; filter:none; opacity:1;">ARC</button>
     </div>
 </div>
 
@@ -178,14 +212,14 @@
         <div class="resource-hud reveal-target">
             <div class="res-box">
                 <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
-                <div id="atp-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">POTENTIAL</div>
-                <div id="atp-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
+                <div id="atp-label" style="font-size:0.5em; font-family:'Orbitron'; opacity: 0.6; letter-spacing: 2px;">POTENTIAL</div>
+                <div id="atp-ps" style="font-size:0.6em; opacity: 0.4;">+0/s</div>
             </div>
             <button id="transmute-btn" onclick="transmute()" title="Convert Energy to Structure">⇄</button>
             <div class="res-box">
                 <div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div>
-                <div id="dna-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">STRUCTURE</div>
-                <div id="dna-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
+                <div id="dna-label" style="font-size:0.5em; font-family:'Orbitron'; opacity: 0.6; letter-spacing: 2px;">STRUCTURE</div>
+                <div id="dna-ps" style="font-size:0.6em; opacity: 0.4;">+0/s</div>
             </div>
         </div>
 
@@ -195,10 +229,10 @@
         </div>
 
         <div style="text-align:center; width: 100%; max-width: 500px;">
-            <h2 id="stage-name" class="reveal-target" style="font-family:'Orbitron'; margin:0; font-size:1.3em;">Singularity</h2>
-            <div style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px; margin:15px 0; overflow:hidden;"><div id="progress-fill"></div></div>
-            <div id="progress-stats" class="reveal-target" style="font-family:'Orbitron'; font-size:0.65em; opacity:0.6;">0 / 500</div>
-            <p id="stage-desc" class="reveal-target" style="font-size:0.8em; font-style:italic; margin-top:10px; opacity: 0.7;"></p>
+            <h2 id="stage-name" class="reveal-target" style="font-family:'Orbitron'; margin:0; font-size:1.3em; letter-spacing: 1px;">Singularity</h2>
+            <div style="height:6px; background:rgba(255,255,255,0.05); border-radius:4px; margin:15px 0; overflow:hidden;"><div id="progress-fill"></div></div>
+            <div id="progress-stats" class="reveal-target" style="font-family:'Orbitron'; font-size:0.6em; opacity:0.5;">0 / 500</div>
+            <p id="stage-desc" class="reveal-target" style="font-size:0.75em; font-style:italic; margin-top:10px; opacity: 0.6;"></p>
         </div>
     </div>
 
@@ -215,25 +249,24 @@
     </div>
 </div>
 
-<div id="path-modal" class="modal"><div class="modal-content"><h2>CHOOSE PATH</h2><div style="display:flex; gap:15px; margin-top:20px;"><button onclick="selectPath('predatory')" style="background:var(--path-pred); flex:1;">HUNTER</button><button onclick="selectPath('social')" style="background:var(--path-soc); flex:1;">HIVE MIND</button></div></div></div>
-<div id="archive-modal" class="modal"><div class="modal-content" style="max-width:900px;"><h1 style="font-family:'Orbitron';">ARCHIVE</h1><div id="specimen-history" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px; max-height:60vh; overflow-y:auto;"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px;">CLOSE</button></div></div>
+<div id="path-modal" class="modal"><div class="modal-content"><h2>CHOOSE PATH</h2><div style="display:flex; gap:15px; margin-top:20px;"><button onclick="selectPath('predatory')" style="background:var(--path-pred); filter:none; opacity:1; flex:1;">HUNTER</button><button onclick="selectPath('social')" style="background:var(--path-soc); filter:none; opacity:1; flex:1;">HIVE MIND</button></div></div></div>
+<div id="archive-modal" class="modal"><div class="modal-content" style="max-width:900px;"><h1 style="font-family:'Orbitron';">ARCHIVE</h1><div id="specimen-history" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px; max-height:60vh; overflow-y:auto;"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px; filter:none; opacity:1;">CLOSE</button></div></div>
 
 <script>
     let audioCtx = null, droneGain = null;
     function initAudio() { 
         if (audioCtx) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        droneGain = audioCtx.createGain(); droneGain.gain.setValueAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime);
-        const lpf = audioCtx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.setValueAtTime(120, audioCtx.currentTime);
+        droneGain = audioCtx.createGain(); droneGain.gain.setValueAtTime(state.muted ? 0 : 0.02, audioCtx.currentTime);
+        const lpf = audioCtx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.setValueAtTime(100, audioCtx.currentTime);
         const osc1 = audioCtx.createOscillator(); osc1.type = 'sine'; osc1.frequency.setValueAtTime(40, audioCtx.currentTime);
         const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(40.5, audioCtx.currentTime);
         osc1.connect(lpf); osc2.connect(lpf); lpf.connect(droneGain); droneGain.connect(audioCtx.destination);
         osc1.start(); osc2.start();
     }
-    function playSfx(f, t, d, v=0.05) { if(state.muted || !audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
-    function playEvolutionChime() { if(state.muted || !audioCtx) return; [440, 554.37, 659.25, 880].forEach((freq, i) => { setTimeout(() => playSfx(freq, 'sine', 0.6, 0.1), i * 100); }); }
+    function playSfx(f, t, d, v=0.04) { if(state.muted || !audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
 
-    const STORAGE_KEY = 'evo_metric_smooth_spin_v1';
+    const STORAGE_KEY = 'evo_metric_strangled_v1';
     const INITIAL_STATE = {
         uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
         combo: 1, lastClick: Date.now(), entropy: 0, path: null, theme: 'dark', 
@@ -260,33 +293,18 @@
         { name: "Protein", emoji: "🧬", goal: 10000000, era: "CHEMICAL", desc: "Amino chains." },
         { name: "Genetic Code", emoji: "🌀", goal: 50000000, era: "GENETIC", desc: "Instruction sets." },
         { name: "Protocell", emoji: "🧫", goal: 200000000, era: "BIOLOGICAL", desc: "Life's boundary." },
-        { name: "Bacteria", emoji: "🦠", goal: 1000000000, era: "BIOLOGICAL", desc: "Binary fission." },
-        { name: "Eukaryote", emoji: "🍄", goal: 5000000000, era: "BIOLOGICAL", desc: "Complex cells." },
-        { name: "Multicellular", emoji: "🌱", goal: 25000000000, era: "MACRO", desc: "Cooperation." },
-        { name: "Complex Organism", emoji: "🐟", goal: 100000000000, era: "MACRO", desc: "Sensory organs." },
-        { name: "Neural Network", emoji: "🕸️", goal: 500000000000, era: "COGNITIVE", desc: "Impulses." },
-        { name: "Consciousness", emoji: "🧠", goal: 2000000000000, era: "COGNITIVE", desc: "Self-awareness." },
-        { name: "Tool Use", emoji: "🔨", goal: 10000000000000, era: "TECHNOLOGICAL", desc: "Fire and iron." },
-        { name: "Industrial Era", emoji: "⚙️", goal: 50000000000000, era: "TECHNOLOGICAL", desc: "Steam and steel." },
-        { name: "Digital Age", emoji: "💻", goal: 250000000000000, era: "TECHNOLOGICAL", desc: "Silicon hearts." },
-        { name: "AI Singularity", emoji: "🌌", goal: 1000000000000000, era: "TRANSCENDENT", desc: "Digital peak." },
-        { name: "Planetary Mind", emoji: "🌍", goal: 10000000000000000, era: "TRANSCENDENT", desc: "Unified thought." },
-        { name: "Dyson Swarm", emoji: "☀️", goal: 100000000000000000, era: "TRANSCENDENT", desc: "Sun capture." },
-        { name: "Galactic Bunny-Mind", emoji: "🐰", goal: 1000000000000000000, era: "CELESTIAL", desc: "Fluffy Unity." },
-        { name: "Universal Bunny-larity", emoji: "🐇", goal: 10000000000000000000, era: "TRANSCENDENT", desc: "The loop complete." }
+        { name: "AI Singularity", emoji: "🌌", goal: 1000000000, era: "TRANSCENDENT", desc: "Digital peak." }
     ];
 
     const lib = {
         phys: [
             { id: 'pa1', name: "Neutrino Pulse", cost: 150, r: 8, era: 1 },
             { id: 'pa2', name: "Electron Shell", cost: 1200, r: 50, era: 2 },
-            { id: 'p4', name: "Atomic Bonding", cost: 6000, r: 250, era: 3 },
-            { id: 'p5', name: "Amino Chains", cost: 100000, r: 5000, era: 5 }
+            { id: 'p4', name: "Atomic Bonding", cost: 6000, r: 250, era: 3 }
         ],
         dna: [
             { id: 'da1', name: "Membrane Logic", cost: 500000, r: 10, era: 6, currency: 'atp' },
-            { id: 'd3', name: "Cellular Logic", cost: 25000, r: 200, era: 8 },
-            { id: 'da2', name: "Synaptic Jump", cost: 1000000, m: 5.0, era: 12 }
+            { id: 'd3', name: "Cellular Logic", cost: 25000, r: 200, era: 8 }
         ]
     };
 
@@ -332,7 +350,6 @@
         document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b * eff)}/s`;
         document.getElementById('entropy-filter').style.opacity = state.entropy * 0.9;
         document.getElementById('uni-val').innerText = state.uni;
-        document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
 
         const s = stages[state.stage], spec = document.getElementById('specimen');
         spec.innerText = s.emoji; spec.className = state.stage === 0 ? 'singularity' : '';
@@ -345,9 +362,12 @@
         document.getElementById('progress-stats').innerText = `${formatNum(state.total - prev)} / ${formatNum(s.goal - prev)}`;
 
         let opacity = state.stage === 0 ? Math.max(0.05, state.total / 500) : 1;
-        document.querySelectorAll('.reveal-target').forEach(el => { el.style.opacity = opacity; el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; });
+        document.querySelectorAll('.reveal-target').forEach(el => { 
+            el.style.opacity = opacity; 
+            el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; 
+            if (opacity >= 0.9) el.classList.add('revealed');
+        });
 
-        // UPDATE AFFORDANCE BRIGHTNESS
         document.querySelectorAll('button[data-cost]').forEach(btn => {
             const cost = parseFloat(btn.dataset.cost);
             const cur = btn.dataset.currency;
@@ -360,18 +380,20 @@
 
         const h = document.getElementById('resonance-halo'); h.className = state.combo > 1.2 ? 'active' : '';
         document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
+        
         if (state.path) {
-            document.getElementById('specimen-container').style.borderColor = `var(--path-${state.path})`;
-            h.style.borderColor = `var(--path-${state.path})`;
+            const pathColor = `var(--path-${state.path})`;
+            document.getElementById('specimen-container').style.borderColor = pathColor;
+            h.style.borderColor = pathColor;
+            h.style.boxShadow = `0 0 15px ${pathColor}`;
         }
 
         if (state.total >= s.goal && state.stage < stages.length - 1) {
             document.getElementById('white-out').style.opacity = 0.5; setTimeout(()=>document.getElementById('white-out').style.opacity=0, 500);
-            playEvolutionChime(); if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
             state.stage++; if(state.stage === 7 && !state.path) toggleModal('path-modal');
             checkDyn(); renderUpgrades();
         }
-        saveGame();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
     function checkDyn() {
@@ -380,19 +402,16 @@
 
     function formatNum(n) {
         if(n < 1000000) return Math.floor(n).toLocaleString();
-        const units = ["M", "B", "T", "Q", "Sx", "Sp", "Oc"];
+        const units = ["M", "B", "T", "Q", "Sx"];
         const e = Math.floor(Math.log10(n) / 3) - 2;
         return (n / Math.pow(10, (e+2)*3)).toFixed(2) + units[e];
     }
 
-    // --- SPIN FIX APPLIED HERE ---
     function animate() {
-        // Target the container for rotation instead of the emoji itself
         const container = document.getElementById('specimen-container');
         let speed = 0.2 + ((state.combo - 1) * 0.3);
         if (state.clickSpinVelocity > 0.1) { speed += state.clickSpinVelocity; state.clickSpinVelocity *= 0.92; }
         state.currentRotation = (state.currentRotation + speed) % 360;
-        // Apply rotation to the container
         container.style.transform = `rotate(${state.currentRotation}deg)`;
         requestAnimationFrame(animate);
     }
@@ -404,29 +423,13 @@
         state.atp += (state.atpRate * state.multi * b * eff) / 10;
         state.dna += (state.dnaRate * b * eff) / 10;
         state.total += (state.atpRate * state.multi * b * eff) / 10;
-        state.lastAnchor = Date.now(); updateUI();
+        updateUI();
     }, 100);
 
-    function toggleModal(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; if(id === 'archive-modal') renderArchive(); }
-    
-    function renderUpgrades() { 
-        const r = (id, type) => { 
-            document.getElementById(id).innerHTML = state.upgrades[type].map((u, i) => {
-                const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
-                return `<div class="upgrade-card">
-                    <div><b>${u.name}</b><br><small>Lvl ${u.count}</small></div>
-                    <button data-cost="${u.cost}" data-currency="${cur}" onclick="buy('${type}', ${i})">${formatNum(u.cost)}</button>
-                </div>`;
-            }).join(''); 
-        }; 
-        r('phys-upgrades', 'phys'); r('dna-upgrades', 'dna'); 
-    }
-
-    function renderArchive() { document.getElementById('specimen-history').innerHTML = state.archive.map(i => `<div class="history-card" style="padding:15px; border:1px solid rgba(255,255,255,0.05); border-radius:12px;"><b>${stages[i].emoji} ${stages[i].name}</b></div>`).join(''); }
+    function toggleModal(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
+    function renderUpgrades() { const r = (id, type) => { document.getElementById(id).innerHTML = state.upgrades[type].map((u, i) => { const cur = u.currency || (type === 'phys' ? 'atp' : 'dna'); return `<div class="upgrade-card"><div><b>${u.name}</b><br><small>Lvl ${u.count}</small></div><button data-cost="${u.cost}" data-currency="${cur}" onclick="buy('${type}', ${i})">${formatNum(u.cost)}</button></div>`; }).join(''); }; r('phys-upgrades', 'phys'); r('dna-upgrades', 'dna'); }
     function selectPath(p) { state.path = p; toggleModal('path-modal'); updateUI(); }
-    function toggleMute() { state.muted = !state.muted; document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊"; if(droneGain) droneGain.gain.setValueAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime); }
-    function triggerBigBang() { const n = state.uni + 1; state = INITIAL_STATE; state.uni = n; saveGame(); location.reload(); }
-    function saveGame() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function toggleMute() { state.muted = !state.muted; document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊"; if(droneGain) droneGain.gain.setValueAtTime(state.muted ? 0 : 0.02, audioCtx.currentTime); }
 
     checkDyn(); renderUpgrades(); updateUI(); animate();
 </script>
