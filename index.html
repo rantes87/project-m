@@ -118,8 +118,9 @@
             filter: grayscale(0) opacity(1);
         }
 
-        /* SPECIMEN DISPLAY */
+        /* SPECIMEN DISPLAY - FIX APPLIED HERE */
         .main-display { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        
         #specimen-container { 
             position: relative; 
             width: 260px; height: 260px; 
@@ -127,9 +128,17 @@
             display: flex; justify-content: center; align-items: center; 
             border-radius: 50%; border: 2px solid var(--atp-color); 
             box-shadow: 0 0 40px var(--atp-glow);
-            transition: 0.5s;
+            transition: border-color 0.5s, box-shadow 0.5s; /* Only transition colors */
+            z-index: 5; 
+            /* The container handles the rotation now */
+            will-change: transform;
         }
-        #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; will-change: transform; transition: transform 0.1s; }
+
+        #specimen { 
+            font-size: 90px; cursor: pointer; user-select: none; z-index: 6; 
+            /* Removed conflicting transform transition */
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy pulse */
+        }
         #specimen:active { transform: scale(0.92); }
         #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
 
@@ -224,7 +233,7 @@
     function playSfx(f, t, d, v=0.05) { if(state.muted || !audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
     function playEvolutionChime() { if(state.muted || !audioCtx) return; [440, 554.37, 659.25, 880].forEach((freq, i) => { setTimeout(() => playSfx(freq, 'sine', 0.6, 0.1), i * 100); }); }
 
-    const STORAGE_KEY = 'evo_metric_bright_v1';
+    const STORAGE_KEY = 'evo_metric_smooth_spin_v1';
     const INITIAL_STATE = {
         uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
         combo: 1, lastClick: Date.now(), entropy: 0, path: null, theme: 'dark', 
@@ -376,12 +385,15 @@
         return (n / Math.pow(10, (e+2)*3)).toFixed(2) + units[e];
     }
 
+    // --- SPIN FIX APPLIED HERE ---
     function animate() {
-        const spec = document.getElementById('specimen');
+        // Target the container for rotation instead of the emoji itself
+        const container = document.getElementById('specimen-container');
         let speed = 0.2 + ((state.combo - 1) * 0.3);
         if (state.clickSpinVelocity > 0.1) { speed += state.clickSpinVelocity; state.clickSpinVelocity *= 0.92; }
         state.currentRotation = (state.currentRotation + speed) % 360;
-        spec.style.transform = `rotate(${state.currentRotation}deg)`;
+        // Apply rotation to the container
+        container.style.transform = `rotate(${state.currentRotation}deg)`;
         requestAnimationFrame(animate);
     }
 
