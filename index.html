@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Evolution: No-Reset</title>
+    <title>Universal Evolution: Master Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="dark"] {
@@ -80,10 +80,10 @@
     <div style="display:flex; gap:10px;">
         <button id="mute-btn" onclick="toggleMute()" style="background:none; border:1px solid var(--text-secondary); color:var(--text-secondary); min-width:auto;">🔊</button>
         <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid var(--text-secondary); color:var(--text-secondary); min-width:auto;">ARC</button>
-        </div>
+    </div>
 </div>
 
-<div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Focus on click power.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Focus on automation.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
+<div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Solo focus.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Passive focus.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
 <div id="offline-modal" class="modal"><div class="modal-content"><h2 style="font-family:'Orbitron'; color:gold;">TIME SYNC</h2><div id="offline-report" style="margin:20px 0; padding:20px; background:rgba(255,255,255,0.05); border-radius: 15px;"></div><button onclick="toggleModal('offline-modal')" style="width:100%;">RESUME</button></div></div>
 <div id="archive-modal" class="modal"><div class="modal-content" style="max-width:1000px;"><h1 style="font-family:'Orbitron';">ARCHIVE</h1><div id="specimen-history" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; max-height:60vh; overflow-y:auto;"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px;">CLOSE</button></div></div>
 <div id="prestige-modal" class="modal"><div class="modal-content"><h1 style="font-family:'Orbitron'; color:gold;">BIG BANG</h1><h2 id="next-uni-text" style="color:var(--atp-color)">Universe Level 2</h2><button onclick="triggerBigBang()" style="background:gold; width:100%; color:#000;">RECREATE REALITY</button></div></div>
@@ -108,7 +108,6 @@
 </div>
 
 <script>
-    // --- AUDIO ENGINE (ETHEREAL SINE SHIMMER) ---
     let audioCtx = null, droneGain = null;
     function initAudio() { 
         if (audioCtx) return;
@@ -123,8 +122,7 @@
     function playSfx(f, t, d, v=0.05) { if(state.muted || !audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
     function playEvolutionChime() { if(state.muted || !audioCtx) return; [440, 554.37, 659.25, 880].forEach((freq, i) => { setTimeout(() => playSfx(freq, 'sine', 0.6, 0.1), i * 100); }); }
 
-    // --- GAME DATA ---
-    const STORAGE_KEY = 'evo_noreset_v39';
+    const STORAGE_KEY = 'evo_master_fix_v40';
     const INITIAL_STATE = {
         uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
         combo: 1, lastClick: Date.now(), entropy: 0, path: null, theme: 'dark', 
@@ -136,7 +134,7 @@
                 { id: 'p3', name: "Hadron Fusion", cost: 600, r: 35, count: 0, era: 2 }
             ],
             dna: [
-                { id: 'd1', name: "Data Points", cost: 50, r: 1, count: 0, era: 5 },
+                { id: 'd1', name: "Data Points", cost: 250000, r: 2, count: 0, era: 5, currency: 'atp' }, // Costs ATP to start!
                 { id: 'd2', name: "Sync Multiplier", cost: 1000, m: 0.5, count: 0, era: 7 }
             ]
         }
@@ -172,42 +170,32 @@
             { id: 'pa1', name: "Neutrino Pulse", cost: 150, r: 8, era: 1 },
             { id: 'pa2', name: "Electron Shell", cost: 1200, r: 50, era: 2 },
             { id: 'p4', name: "Atomic Bonding", cost: 6000, r: 250, era: 3 },
-            { id: 'pa3', name: "Isotope Decay", cost: 15000, r: 700, era: 3 },
             { id: 'p5', name: "Amino Chains", cost: 100000, r: 5000, era: 5 },
-            { id: 'p6', name: "Metabolic Pathway", cost: 750000, r: 35000, era: 7 },
-            { id: 'pa6', name: "Solar Synthesis", cost: 2000000, r: 100000, era: 8 },
-            { id: 'p8', name: "Steam Engine", cost: 60000000, r: 2500000, era: 15 },
-            { id: 'p9', name: "Quantum Computing", cost: 800000000, r: 35000000, era: 17 },
-            { id: 'p12', name: "Star Eater", cost: 50000000000000, r: 2000000000000, era: 21 }
+            { id: 'p6', name: "Metabolic Pathway", cost: 750000, r: 35000, era: 7 }
         ],
         dna: [
-            { id: 'da1', name: "Membrane Logic", cost: 500, r: 5, era: 7 },
+            { id: 'da1', name: "Membrane Logic", cost: 500000, r: 5, era: 6, currency: 'atp' }, // Costs ATP to start!
             { id: 'd3', name: "Cellular Logic", cost: 25000, r: 100, era: 8 },
-            { id: 'da2', name: "Synaptic Jump", cost: 1000000, m: 3.0, era: 12 },
             { id: 'da5', name: "Bunny Wisdom", cost: 20000000000, r: 1000000, era: 18 }
         ]
     };
 
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
 
-    // --- TEMPORAL ANCHOR (MOBILE IDLE) ---
     function syncTime() {
         const now = Date.now(), sec = Math.floor((now - state.lastAnchor) / 1000);
         if (sec > 5 && (state.atpRate > 0 || state.dnaRate > 0)) {
             const b = Math.pow(2, state.uni-1), eff = Math.max(0.1, 1 - state.entropy);
             const ga = (state.atpRate * state.multi * b * eff) * sec, gd = (state.dnaRate * b * eff) * sec;
             state.atp += ga; state.dna += gd; state.total += ga;
-            state.entropy = Math.min(1, state.entropy + (0.00001 * sec)); // Away entropy
-            document.getElementById('offline-report').innerHTML = `<b>+ ${formatNum(ga)} Energy</b><br><b>+ ${formatNum(gd)} Structure</b><br><small>Stasis Time: ${formatTime(sec)}</small>`;
+            state.entropy = Math.min(1, state.entropy + (0.00001 * sec));
+            document.getElementById('offline-report').innerHTML = `<b>+ ${formatNum(ga)} Energy</b><br><b>+ ${formatNum(gd)} Structure</b><br><small>Stasis: ${formatTime(sec)}</small>`;
             toggleModal('offline-modal');
         }
         state.lastAnchor = now; saveGame();
     }
-
     function formatTime(s) { return s < 60 ? s+"s" : (s < 3600 ? Math.floor(s/60)+"m" : Math.floor(s/3600)+"h"); }
-    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncTime(); else saveGame(); });
 
-    // --- LOGIC FUNCTIONS ---
     function handleClick() {
         initAudio(); playSfx(150+(state.combo*50), 'sine', 0.1);
         const now = Date.now(); state.combo = (now - state.lastClick < 1000) ? Math.min(10.0, state.combo + 0.1) : 1.1;
@@ -219,9 +207,11 @@
     }
 
     function buy(type, i) {
-        const u = state.upgrades[type][i], cur = type === 'phys' ? 'atp' : 'dna';
-        if (state[cur] >= u.cost) {
-            playSfx(880, 'triangle', 0.2); state[cur] -= u.cost; u.count++;
+        const u = state.upgrades[type][i];
+        const currencyKey = u.currency || (type === 'phys' ? 'atp' : 'dna');
+        if (state[currencyKey] >= u.cost) {
+            playSfx(880, 'triangle', 0.2);
+            state[currencyKey] -= u.cost; u.count++;
             if (u.r) type === 'phys' ? state.atpRate += u.r : state.dnaRate += u.r;
             if (u.m) state.multi += u.m;
             if (u.addClick) state.click += u.addClick;
@@ -241,11 +231,7 @@
         document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b * eff)}/s`;
         document.getElementById('entropy-filter').style.opacity = state.entropy * 0.95;
         document.getElementById('uni-val').innerText = state.uni;
-
-        // Bunny Link Visibility
         document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
-
-        // Complexity Panel Visibility
         if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
 
         const h = document.getElementById('resonance-halo'); h.className = state.combo > 1.2 ? 'active' : '';
@@ -268,11 +254,12 @@
             checkDynamicUpgrades(); renderUpgrades();
         }
         if (state.stage === stages.length - 1 && state.atp >= stages[state.stage].goal) toggleModal('prestige-modal');
-
         const isB = state.stage >= 7; document.getElementById('atp-label').innerText = isB ? "ATP" : "Potential";
         document.getElementById('dna-label').innerText = isB ? "DNA" : "Structure";
-        state.upgrades.phys[0].name = isB ? "God Power" : "Singularity Force";
-        document.querySelectorAll('button[data-cost]').forEach(btn => btn.disabled = state[btn.dataset.cur] < btn.dataset.cost);
+        document.querySelectorAll('button[data-cost]').forEach(btn => {
+            const cur = btn.dataset.currency;
+            btn.disabled = state[cur] < btn.dataset.cost;
+        });
     }
 
     function formatNum(n) {
@@ -294,7 +281,7 @@
 
     setInterval(() => {
         if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
-        state.entropy = Math.min(1, state.entropy + (0.0000011574 * (state.stage + 1))); // 24hr entropy
+        state.entropy = Math.min(1, state.entropy + (0.0000011574 * (state.stage + 1)));
         const b = Math.pow(2, state.uni-1), eff = (1 - state.entropy);
         state.atp += (state.atpRate * state.multi * b * eff) / 10;
         state.dna += (state.dnaRate * b * eff) / 10;
@@ -303,14 +290,21 @@
     }, 100);
 
     function toggleModal(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; if(id === 'archive-modal') renderArchive(); }
-    function renderUpgrades() { const r = (id, type) => { document.getElementById(id).innerHTML = state.upgrades[type].map((u, i) => `<div class="upgrade-card"><div><b>${u.name}</b><br><small>Lvl ${u.count}</small></div><button data-cost="${u.cost}" data-cur="${type==='phys'?'atp':'dna'}" onclick="buy('${type}', ${i})">${formatNum(u.cost)}</button></div>`).join(''); }; r('phys-upgrades', 'phys'); r('dna-upgrades', 'dna'); }
+    function renderUpgrades() { 
+        const r = (id, type) => { 
+            document.getElementById(id).innerHTML = state.upgrades[type].map((u, i) => {
+                const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
+                return `<div class="upgrade-card"><div><b>${u.name}</b><br><small>Lvl ${u.count}</small></div><button data-cost="${u.cost}" data-currency="${cur}" onclick="buy('${type}', ${i})">${formatNum(u.cost)}</button></div>`;
+            }).join(''); 
+        }; r('phys-upgrades', 'phys'); r('dna-upgrades', 'dna'); 
+    }
     function renderArchive() { document.getElementById('specimen-history').innerHTML = state.archive.map(i => `<div class="history-card"><b>${stages[i].emoji} ${stages[i].name}</b><br><small>${stages[i].era}</small></div>`).join(''); }
     function selectPath(p) { state.path = p; toggleModal('path-modal'); }
     function toggleMute() { state.muted = !state.muted; document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊"; if(droneGain) droneGain.gain.setTargetAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime, 0.5); initAudio(); saveGame(); }
     function triggerBigBang() { const n = state.uni + 1; state = INITIAL_STATE; state.uni = n; saveGame(); location.reload(); }
     function saveGame() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    function resetGame() { if(confirm("Complete Reset?")) { localStorage.clear(); location.reload(); } }
 
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncTime(); else saveGame(); });
     syncTime(); checkDynamicUpgrades(); renderUpgrades(); updateUI(); animate();
     setInterval(saveGame, 2000);
 </script>
