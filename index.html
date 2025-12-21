@@ -14,6 +14,8 @@
             --panel-border: 1px solid rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff; --text-secondary: #8899aa;
             --combo-low: #00ff88; --combo-mid: #f1c40f; --combo-high: #ff3860;
+            /* Path Colors */
+            --path-pred: #ff3860; --path-soc: #00d1ff;
         }
         :root[data-theme="light"] {
             --atp-color: #00a86b; --atp-glow: rgba(0, 168, 107, 0.2);
@@ -59,7 +61,12 @@
         #resonance-halo { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; text-align: center; opacity: 0; transition: 0.4s; background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 30px; border: 2px solid var(--combo-low); z-index: 10; }
         #resonance-halo.active { opacity: 1; top: -75px; }
 
-        #specimen-container { position: relative; width: 260px; height: 260px; margin: 80px auto 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid var(--atp-color); box-shadow: 0 0 40px var(--atp-glow); transition: 0.2s; z-index: 5; }
+        #specimen-container { position: relative; width: 260px; height: 260px; margin: 80px auto 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid var(--atp-color); box-shadow: 0 0 40px var(--atp-glow); transition: 0.5s; z-index: 5; }
+        
+        /* Path Overrides for Container */
+        #specimen-container.path-predatory { border-color: var(--path-pred); box-shadow: 0 0 50px rgba(255, 56, 96, 0.5); }
+        #specimen-container.path-social { border-color: var(--path-soc); box-shadow: 0 0 50px rgba(0, 209, 255, 0.5); }
+
         #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; will-change: transform; }
         #specimen.singularity { font-size: 25px; color: #fff; text-shadow: 0 0 20px #fff, 0 0 40px var(--atp-color); }
 
@@ -97,7 +104,7 @@
     </div>
 </div>
 
-<div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Solo focus.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Passive focus.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
+<div id="path-modal" class="modal"><div style="display:flex; gap:20px; flex-wrap: wrap; justify-content: center;"><div class="panel" style="max-width:320px; border-color:var(--path-pred);" onclick="selectPath('predatory')"><h2 style="color:var(--path-pred); font-family:'Orbitron'">PREDATORY</h2><p>Focus on raw power and efficiency.</p><button style="background:var(--path-pred); width:100%;">SELECT</button></div><div class="panel" style="max-width:320px; border-color:var(--path-soc);" onclick="selectPath('social')"><h2 style="color:var(--path-soc); font-family:'Orbitron'">HIVE MIND</h2><p>Focus on connectivity and passive growth.</p><button style="background:var(--path-soc); width:100%;">SELECT</button></div></div></div>
 <div id="offline-modal" class="modal"><div class="modal-content"><h2 style="font-family:'Orbitron'; color:gold;">TIME SYNC</h2><div id="offline-report" style="margin:20px 0; padding:20px; background:rgba(255,255,255,0.05); border-radius: 15px;"></div><button onclick="toggleModal('offline-modal')" style="width:100%;">RESUME</button></div></div>
 <div id="archive-modal" class="modal"><div class="modal-content" style="max-width:1000px;"><h1 style="font-family:'Orbitron';">ARCHIVE</h1><div id="specimen-history" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; max-height:60vh; overflow-y:auto;"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px;">CLOSE</button></div></div>
 <div id="prestige-modal" class="modal"><div class="modal-content"><h1 style="font-family:'Orbitron'; color:gold;">BIG BANG</h1><h2 id="next-uni-text" style="color:var(--atp-color)">Universe Level 2</h2><button onclick="triggerBigBang()" style="background:gold; width:100%; color:#000;">RECREATE REALITY</button></div></div>
@@ -236,7 +243,14 @@
         state.lastClick = now; if (state.entropy > 0.3) state.entropy = Math.max(0, state.entropy - 0.1);
         const b = Math.pow(2, state.uni-1), gain = state.click * state.multi * state.combo * b * (1 - state.entropy);
         state.atp += gain; state.total += gain; state.clickSpinVelocity = 25;
-        const r = document.createElement('div'); r.className='ripple'; document.getElementById('specimen-container').appendChild(r);
+        
+        // Ripple Logic with Path Colors
+        const r = document.createElement('div'); 
+        r.className='ripple'; 
+        if(state.path === 'predatory') r.style.borderColor = 'var(--path-pred)';
+        if(state.path === 'social') r.style.borderColor = 'var(--path-soc)';
+        
+        document.getElementById('specimen-container').appendChild(r);
         setTimeout(() => r.remove(), 500); updateUI();
     }
 
@@ -283,10 +297,19 @@
         document.getElementById('transmute-btn').disabled = state.atp < 100000;
         document.getElementById('transmute-btn').style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
 
-        const h = document.getElementById('resonance-halo'); h.className = state.combo > 1.2 ? 'active' : '';
+        // Apply Path Visuals to Ring and Halo
+        const container = document.getElementById('specimen-container');
+        const h = document.getElementById('resonance-halo'); 
+        h.className = state.combo > 1.2 ? 'active' : '';
         document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
-        const c = state.combo < 3 ? 'low' : (state.combo < 7 ? 'mid' : 'high');
-        h.style.borderColor = `var(--combo-${c})`;
+        
+        if (state.path) {
+            container.classList.add(`path-${state.path}`);
+            h.style.borderColor = `var(--path-${state.path === 'predatory' ? 'pred' : 'soc'})`;
+        } else {
+            const c = state.combo < 3 ? 'low' : (state.combo < 7 ? 'mid' : 'high');
+            h.style.borderColor = `var(--combo-${c})`;
+        }
 
         const s = stages[state.stage], spec = document.getElementById('specimen');
         spec.innerText = s.emoji; spec.className = state.stage === 0 ? 'singularity' : '';
@@ -342,7 +365,7 @@
     function toggleModal(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; if(id === 'archive-modal') renderArchive(); }
     function renderUpgrades() { const r = (id, type) => { document.getElementById(id).innerHTML = state.upgrades[type].map((u, i) => { const cur = u.currency || (type === 'phys' ? 'atp' : 'dna'); return `<div class="upgrade-card"><div><b>${u.name}</b><br><small>Lvl ${u.count}</small></div><button data-cost="${u.cost}" data-currency="${cur}" onclick="buy('${type}', ${i})">${formatNum(u.cost)}</button></div>`; }).join(''); }; r('phys-upgrades', 'phys'); r('dna-upgrades', 'dna'); }
     function renderArchive() { document.getElementById('specimen-history').innerHTML = state.archive.map(i => `<div class="history-card"><b>${stages[i].emoji} ${stages[i].name}</b><br><small>${stages[i].era}</small></div>`).join(''); }
-    function selectPath(p) { state.path = p; toggleModal('path-modal'); }
+    function selectPath(p) { state.path = p; toggleModal('path-modal'); updateUI(); }
     function toggleMute() { state.muted = !state.muted; document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊"; if(droneGain) droneGain.gain.setTargetAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime, 0.5); initAudio(); saveGame(); }
     function triggerBigBang() { const n = state.uni + 1; state = INITIAL_STATE; state.uni = n; saveGame(); location.reload(); }
     function saveGame() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
