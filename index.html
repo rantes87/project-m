@@ -281,8 +281,6 @@
     { name: "The One", emoji: "👁️‍🗨️", goal: 1e23, era: "SUPREME", desc: "Beyond time. Beyond space. Everything is you." },
     { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew." }
 ];
-    
-];
 
 
     const lib = {
@@ -451,12 +449,14 @@
     }
 
 
- function formatNum(n) {
-        if (n < 1000) return Math.floor(n).toLocaleString();
-        const units = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc", "Ud", "Dd"];
-        const e = Math.floor(Math.log10(n) / 3);
-        return (n / Math.pow(10, e * 3)).toFixed(1) + (units[e-1] || "!!");
-    }
+function formatNum(n) {
+    if(n < 1000) return Math.floor(n).toLocaleString();
+    const units = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+    const e = Math.floor(Math.log10(n) / 3);
+    if (e > units.length) return n.toExponential(2); // Fallback for massive numbers
+    return (n / Math.pow(10, e * 3)).toFixed(1) + units[e-1];
+}
+
 
 
     function toggleModal(id) { 
