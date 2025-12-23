@@ -427,9 +427,19 @@ const lib = {
             el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; 
         });
 
-        document.querySelectorAll('button[data-cost]').forEach(btn => {
-            const cost = parseFloat(btn.dataset.cost), cur = btn.dataset.currency || (btn.closest('#phys-upgrades') ? 'atp' : 'dna');
-            btn.disabled = state[cur] < cost;
+        // Safer button disabling using current state
+        document.querySelectorAll('.upgrade-card button').forEach(btn => {
+            const onclick = btn.getAttribute('onclick');
+            const match = onclick.match(/buy\('(\w+)', (\d+)\)/);
+            if (match) {
+                const type = match[1];
+                const index = parseInt(match[2]);
+                const u = state.upgrades[type][index];
+                if (u) {
+                    const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
+                    btn.disabled = state[currency] < u.cost;
+                }
+            }
         });
 
         document.getElementById('transmute-btn').disabled = state.atp < 100000;
@@ -464,8 +474,8 @@ const lib = {
             }
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        }
     }
+    
 
 
 
