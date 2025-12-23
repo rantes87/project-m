@@ -363,6 +363,24 @@
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
+// Detect when user returns to the tab or app
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        applyOfflineEarnings();
+        updateUI();
+    } else {
+        // Save precisely when they leave
+        state.lastTick = Date.now();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+});
+
+// Update the tick in your existing interval
+setInterval(() => {
+    // ... your existing resource logic ...
+    state.lastTick = Date.now(); // The "Anchor"
+    updateUI();
+}, 100);
 
     function checkDyn() {
         ['phys', 'dna'].forEach(type => { lib[type].forEach(u => { if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) { state.upgrades[type].push({...u, count: 0}); } }); });
