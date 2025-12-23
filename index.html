@@ -452,7 +452,20 @@ const lib = {
             h.style.borderColor = color;
         }
 
-        if (state.total >= s.goal) {// --- Big Crunch Button Logic ---
+        // Stage progression logic
+        if (state.total >= s.goal) {
+            if (state.stage < stages.length - 1) {
+                document.getElementById('white-out').style.opacity = 0.5; 
+                setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
+                if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
+                state.stage++; 
+                if(state.stage === 4 && !state.path) toggleModal('path-modal');
+                checkDyn(); 
+                renderUpgrades();
+            }
+        }
+
+        // --- Big Crunch Button Logic (runs every update) ---
         const existingBtn = document.getElementById('rebirth-btn');
         const isFinalStage = state.stage >= stages.length - 1 && state.total >= stages[stages.length - 1].goal;
 
@@ -466,10 +479,9 @@ const lib = {
         } else if (!isFinalStage && existingBtn) {
             existingBtn.remove();
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-    
 
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }  // ← This correctly closes the updateUI() function
 
 
     // Main game loop
