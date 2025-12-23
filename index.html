@@ -35,7 +35,12 @@
         #white-out { position: fixed; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
 
         .reveal-target { transition: opacity 0.8s ease, transform 0.8s ease; }
-
+.history-card:hover {
+    background: rgba(0, 255, 136, 0.1) !important;
+    border-color: var(--atp-color) !important;
+    transform: scale(1.02);
+    transition: all 0.2s;
+}
         /* --- LAYOUT GRID --- */
         #game-wrapper { 
             display: flex;
@@ -226,7 +231,13 @@
 
 <div id="path-modal" class="modal"><div class="modal-content"><h2>CHOOSE PATH</h2><div style="display:flex; gap:15px; margin-top:20px;"><button onclick="selectPath('predatory')" style="background:var(--path-pred); filter:none; opacity:1; flex:1;">HUNTER</button><button onclick="selectPath('social')" style="background:var(--path-soc); filter:none; opacity:1; flex:1;">HIVE MIND</button></div></div></div>
 <div id="archive-modal" class="modal"><div class="modal-content"><h1>COSMIC ARCHIVE</h1><div id="specimen-history"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px; filter:none; opacity:1;">CLOSE</button></div></div>
-
+<div id="science-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px; text-align: left;">
+        <h2 id="science-title" style="font-family:'Orbitron'; color: var(--atp-color);"></h2>
+        <p id="science-desc" style="font-size: 1em; line-height: 1.6; opacity: 0.9; white-space: pre-wrap;"></p>
+        <button onclick="toggleModal('science-modal')" style="margin-top: 20px; filter: none; opacity: 1;">CLOSE</button>
+    </div>
+</div>
 <script>
     // --- CORE LOGIC ---
     const STORAGE_KEY = 'universal_master_v9';
@@ -277,38 +288,38 @@
 
     const stages = [
     // --- PHYSICAL/CHEMICAL ---
-    { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density." },
-    { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge." },
-    { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools." },
-    { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form." },
-    { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup." },
+    { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density.", scienceDesc: "A point of infinite density where spacetime curvature diverges, theorized as the Big Bang origin." },
+    { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge.", scienceDesc: "Quarks and leptons form in quark-gluon plasma ~10⁻⁶ seconds post-Big Bang, bound by strong force." },
+    { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools.", scienceDesc: "Electrons bind to nuclei ~380,000 years post-Big Bang, forming neutral atoms during recombination." },
+    { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form.", scienceDesc: "First H₂ molecules form via radiative association as universe cools further." },
+    { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup.", scienceDesc: "Carbon-based molecules like amino acids arise in primordial soup via hydrothermal vents or meteorites." },
     
     // --- BIOLOGICAL ---
-    { name: "Genetic Code", emoji: "🌀", goal: 10000000, era: "GENETIC", desc: "Information encoded." },
-    { name: "Eukaryote", emoji: "🦠", goal: 50000000, era: "CELLULAR", desc: "Complex internal structures." },
-    { name: "Multicellular", emoji: "🧫", goal: 250000000, era: "BIOLOGICAL", desc: "Specialized cell colonies." },
-    { name: "Aquatic Life", emoji: "🐟", goal: 1000000000, era: "AQUATIC", desc: "The oceans teem." },
-    { name: "Terrestrial", emoji: "🦎", goal: 5000000000, era: "LAND", desc: "Walking on dry land." },
-    { name: "Primate", emoji: "🐒", goal: 25000000000, era: "PRIMATE", desc: "Social grooming and tools." },
+    { name: "Genetic Code", emoji: "🌀", goal: 10000000, era: "GENETIC", desc: "Information encoded.", scienceDesc: "DNA/RNA triplet codons translate nucleotides to amino acids, evolved from RNA world hypothesis." },
+    { name: "Eukaryote", emoji: "🦠", goal: 50000000, era: "CELLULAR", desc: "Complex internal structures.", scienceDesc: "Nucleus and organelles via endosymbiosis of bacteria ~2 billion years ago." },
+    { name: "Multicellular", emoji: "🧫", goal: 250000000, era: "BIOLOGICAL", desc: "Specialized cell colonies.", scienceDesc: "Cell adhesion and signaling enable specialization ~1 billion years ago." },
+    { name: "Aquatic Life", emoji: "🐟", goal: 1000000000, era: "AQUATIC", desc: "The oceans teem.", scienceDesc: "Cambrian explosion: diverse vertebrates with gills and fins ~540 million years ago." },
+    { name: "Terrestrial", emoji: "🦎", goal: 5000000000, era: "LAND", desc: "Walking on dry land.", scienceDesc: "Tetrapods evolve lungs and limbs ~400 million years ago for land colonization." },
+    { name: "Primate", emoji: "🐒", goal: 25000000000, era: "PRIMATE", desc: "Social grooming and tools.", scienceDesc: "Arboreal mammals with stereoscopic vision and grasping hands ~65 million years ago." },
     
     // --- CONSCIOUS/TECHNOLOGICAL ---
-    { name: "Sapiens", emoji: "🧠", goal: 100000000000, era: "SAPIENT", desc: "Awareness of self." },
-    { name: "Linguistic", emoji: "🗣️", goal: 500000000000, era: "CULTURAL", desc: "Sharing myths and knowledge." },
-    { name: "Industrial", emoji: "⚙️", goal: 2500000000000, era: "INDUSTRIAL", desc: "The era of machines." },
-    { name: "Digital", emoji: "💻", goal: 10000000000000, era: "DIGITAL", desc: "The world, networked." },
+    { name: "Sapiens", emoji: "🧠", goal: 100000000000, era: "SAPIENT", desc: "Awareness of self.", scienceDesc: "Homo sapiens: 1,350 cm³ brain enables symbolic thought ~300,000 years ago." },
+    { name: "Linguistic", emoji: "🗣️", goal: 500000000000, era: "CULTURAL", desc: "Sharing myths and knowledge.", scienceDesc: "Complex syntax and recursion evolve ~50,000 years ago for abstract communication." },
+    { name: "Industrial", emoji: "⚙️", goal: 2500000000000, era: "INDUSTRIAL", desc: "The era of machines.", scienceDesc: "Steam engines apply thermodynamics for mechanized production from 1760s." },
+    { name: "Digital", emoji: "💻", goal: 10000000000000, era: "DIGITAL", desc: "The world, networked.", scienceDesc: "Transistors enable binary computing and global internet ~1940s onward." },
     
     // --- TRANSCENDENCE ---
-    { name: "Post-Human", emoji: "🧬", goal: 50000000000000, era: "CYBORG", desc: "Merging biology with silicon." },
-    { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits." },
-    { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars." },
-    { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware." },
-    { name: "Universal One", emoji: "✨", goal: 10000000000000000, era: "DIVINE", desc: "Entropy reversed. Unity." },
-            // --- DIVINE / GODHOOD ---
-    { name: "Solar Deity", emoji: "🔆", goal: 1e17, era: "SOLAR", desc: "Your will dictates the fusion of stars." },
-    { name: "Galactic Overmind", emoji: "🌌", goal: 1e19, era: "GALACTIC_GOD", desc: "A billion stars, a single thought." },
-    { name: "Reality Weaver", emoji: "🧶", goal: 1e21, era: "DIMENSIONAL", desc: "Tapping into the source code of physics." },
-    { name: "The One", emoji: "👁️‍🗨️", goal: 1e23, era: "SUPREME", desc: "Beyond time. Beyond space. Everything is you." },
-    { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew." }
+    { name: "Post-Human", emoji: "🧬", goal: 50000000000000, era: "CYBORG", desc: "Merging biology with silicon.", scienceDesc: "CRISPR and neural implants enhance humans beyond natural evolution." },
+    { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits.", scienceDesc: "AI surpasses human intelligence, triggering recursive self-improvement (Kurzweil ~2045)." },
+    { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars.", scienceDesc: "Orbital satellites capture 100% stellar output, Kardashev Type II civilization." },
+    { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware.", scienceDesc: "Teilhard de Chardin: ultimate complexity converges matter and consciousness." },
+    { name: "Universal One", emoji: "✨", goal: 10000000000000000, era: "DIVINE", desc: "Entropy reversed. Unity.", scienceDesc: "Panpsychism culminates: cosmos achieves holistic self-awareness." },
+    // --- DIVINE / GODHOOD ---
+    { name: "Solar Deity", emoji: "☀️", goal: 1e17, era: "SOLAR", desc: "Your will dictates the fusion of stars.", scienceDesc: "Matrioshka brain: nested Dyson shells compute at stellar core temperatures." },
+    { name: "Galactic Overmind", emoji: "🌌", goal: 1e19, era: "GALACTIC_GOD", desc: "A billion stars, a single thought.", scienceDesc: "Kardashev Type III: galaxy-spanning network processes information at galactic scale." },
+    { name: "Reality Weaver", emoji: "🧶", goal: 1e21, era: "DIMENSIONAL", desc: "Tapping into the source code of physics.", scienceDesc: "Quantum gravity mastery: engineering extra dimensions and fundamental constants." },
+    { name: "The One", emoji: "👁️‍🗨️", goal: 1e23, era: "SUPREME", desc: "Beyond time. Beyond space. Everything is you.", scienceDesc: "Simulation hypothesis apex: total control over multiversal base reality." },
+    { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew.", scienceDesc: "Gravitational recollapse: expansion reverses, forming new singularity for cyclic Big Bang." }
 ];
 
 const lib = {
@@ -617,9 +628,13 @@ function bigCrunch() {
 
     
     function renderArchive() { 
-        document.getElementById('specimen-history').innerHTML = state.archive.map(i => `<div class="history-card"><b>${stages[i].emoji} ${stages[i].name}</b></div>`).join(''); 
-    }
-
+    document.getElementById('specimen-history').innerHTML = 
+        state.archive.map(i => 
+            `<div class="history-card" onclick="showScience(${i})" style="cursor: pointer; transition: background 0.2s;">
+                <b>${stages[i].emoji} ${stages[i].name}</b>
+            </div>`
+        ).join(''); 
+}
 
     
     function selectPath(p) { 
@@ -627,7 +642,12 @@ function bigCrunch() {
         toggleModal('path-modal'); 
         updateUI(); 
     }
-
+function showScience(i) {
+    const s = stages[i];
+    document.getElementById('science-title').innerText = `${s.emoji} ${s.name}`;
+    document.getElementById('science-desc').innerText = s.scienceDesc;
+    toggleModal('science-modal');
+}
     // Initialize
     applyOfflineEarnings();
     checkDyn(); 
