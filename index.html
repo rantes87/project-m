@@ -29,6 +29,10 @@
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
+            /* MOBILE ANCHORS */
+            touch-action: manipulation; /* Prevents double-tap zoom */
+            overscroll-behavior-y: contain; /* Prevents pull-to-refresh */
+            -webkit-user-select: none; /* Prevents text selection during rapid clicking */
         }
 
         #entropy-filter { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
@@ -96,7 +100,7 @@
             .resource-hud { padding: 10px 18px; gap: 10px; }
         }
 
-        /* BUTTON BRIGHTENING ENGINE */
+        /* BUTTONS */
         button { 
             font-family: 'Orbitron'; font-size: 0.7em; padding: 10px 15px; border-radius: 8px; border: none; 
             cursor: pointer; background: var(--atp-color); font-weight: bold; 
@@ -120,8 +124,7 @@
             filter: grayscale(0) opacity(1);
         }
 
-        /* SPECIMEN DISPLAY & FIXED HALO */
-        .main-display { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        /* SPECIMEN DISPLAY */
         #specimen-wrapper {
             position: relative;
             width: 260px; height: 260px;
@@ -140,7 +143,6 @@
         }
         #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
         #specimen:active { transform: scale(0.92); }
-        #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
 
         #resonance-halo { 
             position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; 
@@ -151,7 +153,7 @@
         #resonance-halo.active { opacity: 1; }
 
         .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: var(--panel-border); z-index: 1000; }
-        .bunny-link { font-size: 2em; text-decoration: none; display: none; animation: bunnyPulse 2s infinite ease-in-out; margin-left: 15px; cursor: pointer; }
+        .bunny-link { font-size: 2em; text-decoration: none; display: none; margin-left: 15px; cursor: pointer; }
 
         .upgrade-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--atp-color); }
         .ripple { position: absolute; border: 2px solid var(--atp-color); border-radius: 50%; pointer-events: none; animation: ripple 0.6s ease-out forwards; }
@@ -228,40 +230,9 @@
 <div id="archive-modal" class="modal"><div class="modal-content"><h1>COSMIC ARCHIVE</h1><div id="specimen-history"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px; filter:none; opacity:1;">CLOSE</button></div></div>
 
 <script>
-    // --- SOUND ENGINE ---
-    let audioCtx = null, droneGain = null;
-    function initAudio() { 
-        if (audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        droneGain = audioCtx.createGain(); droneGain.gain.setValueAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime);
-        const lpf = audioCtx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.setValueAtTime(120, audioCtx.currentTime);
-        const osc1 = audioCtx.createOscillator(); osc1.type = 'sine'; osc1.frequency.setValueAtTime(40, audioCtx.currentTime);
-        const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(40.5, audioCtx.currentTime);
-        osc1.connect(lpf); osc2.connect(lpf); lpf.connect(droneGain); droneGain.connect(audioCtx.destination);
-        osc1.start(); osc2.start();
-    }
-    function playSfx(f, t, d, v=0.05) { if(state.muted || !audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
-    function playEvolutionChime() { if(state.muted || !audioCtx) return; [440, 554.37, 659.25, 880].forEach((freq, i) => { setTimeout(() => playSfx(freq, 'sine', 0.6, 0.1), i * 100); }); }
-
     // --- CORE LOGIC ---
-    const STORAGE_KEY = 'universal_master_v9';
-    const INITIAL_STATE = {
-        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
-        combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
-        archive: [], muted: false, currentRotation: 0, clickSpinVelocity: 0,
-        upgrades: {
-            phys: [
-                { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, count: 0, era: 0 },
-                { id: 'p2', name: "Quantum Spark", cost: 80, r: 5, count: 0, era: 1 },
-                { id: 'p3', name: "Atomic Bonding", cost: 1000, r: 50, count: 0, era: 2 }
-            ],
-            dna: [
-                { id: 'd1', name: "Data Streams", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
-                { id: 'd2', name: "Neural Logic", cost: 1000, m: 3.5, count: 0, era: 7 }
-            ]
-        }
-    };
-
+    const STORAGE_KEY = 'universal_master_v11';
+    
     const stages = [
         { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density." },
         { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge." },
@@ -282,7 +253,69 @@
         ]
     };
 
+    const INITIAL_STATE = {
+        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
+        combo: 1, lastClick: Date.now(), lastTick: Date.now(), path: null, 
+        archive: [], muted: false, currentRotation: 0, clickSpinVelocity: 0,
+        upgrades: {
+            phys: [
+                { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, count: 0, era: 0 },
+                { id: 'p2', name: "Quantum Spark", cost: 80, r: 5, count: 0, era: 1 },
+                { id: 'p3', name: "Atomic Bonding", cost: 1000, r: 50, count: 0, era: 2 }
+            ],
+            dna: [
+                { id: 'd1', name: "Data Streams", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
+                { id: 'd2', name: "Neural Logic", cost: 1000, m: 3.5, count: 0, era: 7 }
+            ]
+        }
+    };
+
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
+
+    // Ensure lastTick is initialized if loading from an older version
+    if (!state.lastTick) state.lastTick = Date.now();
+
+    // --- SOUND ENGINE ---
+    let audioCtx = null, droneGain = null;
+    function initAudio() { 
+        if (audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        droneGain = audioCtx.createGain(); droneGain.gain.setValueAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime);
+        const lpf = audioCtx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.frequency.setValueAtTime(120, audioCtx.currentTime);
+        const osc1 = audioCtx.createOscillator(); osc1.type = 'sine'; osc1.frequency.setValueAtTime(40, audioCtx.currentTime);
+        const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(40.5, audioCtx.currentTime);
+        osc1.connect(lpf); osc2.connect(lpf); lpf.connect(droneGain); droneGain.connect(audioCtx.destination);
+        osc1.start(); osc2.start();
+    }
+    function playSfx(f, t, d, v=0.05) { if(state.muted || !audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
+
+    // --- IDLE CALCULATION ENGINE (THE MOBILE ANCHOR) ---
+    function tick() {
+        const now = Date.now();
+        const delta = (now - state.lastTick) / 1000; // Exact time passed in seconds
+        
+        // Only award if delta is positive (prevents issues with clock changes)
+        if (delta > 0) {
+            const b = Math.pow(2, state.uni - 1);
+            
+            // Production Calculation using Delta Time
+            const atpGained = state.atpRate * state.multi * b * delta;
+            const dnaGained = state.dnaRate * b * delta;
+            
+            state.atp += atpGained;
+            state.dna += dnaGained;
+            state.total += atpGained;
+            
+            // Combo Decay based on Delta
+            if (now - state.lastClick > 1500 && state.combo > 1.0) {
+                // Decays faster if more time has passed
+                state.combo = Math.max(1.0, state.combo - (0.5 * delta));
+            }
+        }
+        
+        state.lastTick = now; // Anchor the time
+        updateUI();
+    }
 
     function transmute() {
         if (state.atp >= 100000) {
@@ -293,11 +326,18 @@
 
     function handleClick() {
         initAudio(); 
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        const now = Date.now(); state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        const now = Date.now(); 
+        state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
         state.lastClick = now; 
-        const b = Math.pow(2, state.uni - 1), gain = state.click * state.multi * state.combo * b;
-        state.atp += gain; state.total += gain; state.clickSpinVelocity = 35;
+        
+        const b = Math.pow(2, state.uni - 1);
+        const gain = state.click * state.multi * state.combo * b;
+        
+        state.atp += gain; 
+        state.total += gain; 
+        state.clickSpinVelocity = 35;
+        
         const r = document.createElement('div'); r.className = 'ripple';
         if(state.path) r.style.borderColor = `var(--path-${state.path})`;
         document.getElementById('specimen-container').appendChild(r);
@@ -363,64 +403,11 @@
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
-// Detect when user returns to the tab or app
-
-function calculateOfflineEarnings() {
-    const now = Date.now();
-    // Use the saved lastTick, or now if it's the first time
-    const last = state.lastTick || now; 
-    const deltaMs = now - last;
-    const deltaSeconds = deltaMs / 1000;
-
-    // Only process if more than 1 second has passed
-    if (deltaSeconds > 1) {
-        const b = Math.pow(2, state.uni - 1);
-        const earnedAtp = state.atpRate * state.multi * b * deltaSeconds;
-        const earnedDna = state.dnaRate * b * deltaSeconds;
-
-        state.atp += earnedAtp;
-        state.total += earnedAtp;
-        state.dna += earnedDna;
-        
-        console.log(`Delta catch-up: ${deltaSeconds.toFixed(2)}s. Earned ${earnedAtp.toFixed(0)} ATP.`);
-    }
-    
-    // Always sync the tick to 'now' after calculating
-    state.lastTick = now;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-// Update the tick in your existing interval
-setInterval(() => {
-    // ... your existing resource logic ...
-    state.lastTick = Date.now(); // The "Anchor"
-    updateUI();
-}, 100);
 
     function checkDyn() {
         ['phys', 'dna'].forEach(type => { lib[type].forEach(u => { if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) { state.upgrades[type].push({...u, count: 0}); } }); });
     }
-// 1. Run on Load
-window.addEventListener('load', () => {
-    calculateOfflineEarnings();
-    updateUI();
-});
 
-// 2. Run when the user returns to the app (Mobile Tab Switch)
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-        calculateOfflineEarnings();
-        updateUI();
-    }
-});
-
-// 3. Update the tick every second while the game is open
-setInterval(() => {
-    // We use a small delta here to keep points flowing smoothly while looking at the screen
-    calculateOfflineEarnings(); 
-    updateUI();
-}, 1000);
-    
     function animate() {
         const container = document.getElementById('specimen-container');
         let speed = 0.2 + ((state.combo - 1) * 0.3);
@@ -429,15 +416,6 @@ setInterval(() => {
         container.style.transform = `rotate(${state.currentRotation}deg)`;
         requestAnimationFrame(animate);
     }
-
-    setInterval(() => {
-        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
-        const b = Math.pow(2, state.uni - 1);
-        state.atp += (state.atpRate * state.multi * b) / 10;
-        state.dna += (state.dnaRate * b) / 10;
-        state.total += (state.atpRate * state.multi * b) / 10;
-        updateUI();
-    }, 100);
 
     function formatNum(n) {
         if(n < 1000) return Math.floor(n).toLocaleString();
@@ -452,7 +430,21 @@ setInterval(() => {
     function selectPath(p) { state.path = p; toggleModal('path-modal'); updateUI(); }
     function toggleMute() { state.muted = !state.muted; document.getElementById('mute-btn').innerText = state.muted ? "🔇" : "🔊"; initAudio(); if(droneGain) droneGain.gain.setValueAtTime(state.muted ? 0 : 0.03, audioCtx.currentTime); }
 
-    checkDyn(); renderUpgrades(); updateUI(); animate();
+    // --- MOBILE LIFECYCLE HANDLERS ---
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            tick(); // Catch up points immediately when tab is reopened
+        }
+    });
+
+    // Run the production tick every 100ms for smooth UI
+    setInterval(tick, 100);
+
+    // Initial Execution
+    checkDyn(); 
+    renderUpgrades(); 
+    tick(); // Initial point catch-up on page load
+    animate();
 </script>
 </body>
 </html>
