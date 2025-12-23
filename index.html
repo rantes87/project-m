@@ -450,7 +450,8 @@
         requestAnimationFrame(animate);
     }
 
-    function formatNum(n) {
+
+function formatNum(n) {
     if(n < 1000) return Math.floor(n).toLocaleString();
     const units = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
     const e = Math.floor(Math.log10(n) / 3);
