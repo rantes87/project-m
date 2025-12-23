@@ -282,8 +282,7 @@
     { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew." }
 ];
 
-
-    const lib = {
+const lib = {
     phys: [
         // --- 1. MICRO ERA (VOID to MOLECULAR) ---
         { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, era: 0 },
@@ -293,7 +292,6 @@
         { id: 'pa4', name: "Crystal Lattice", cost: 50000, r: 2200, era: 4 },
 
         // --- 2. BIOLOGICAL ERA (GENETIC to LAND) ---
-        [attachment_1](attachment)
         { id: 'pb1', name: "Mitochondria", cost: 100000, r: 8000, era: 6 },
         { id: 'pb2', name: "Neural Bundles", cost: 1e6, r: 45000, era: 8 },
         { id: 'pb3', name: "Calcified Skeleton", cost: 2.5e7, r: 180000, era: 9 },
@@ -313,24 +311,20 @@
         { id: 'pd5', name: "Reality Anchor", cost: 1e23, r: 5e16, era: 23 }
     ],
     dna: [
-        // --- 1. MICRO COMPLEXITY ---
         { id: 'da1', name: "Membrane Logic", cost: 50000, r: 50, era: 5, currency: 'atp' },
         { id: 'da2', name: "RNA Transcription", cost: 500, r: 120, era: 6 },
         { id: 'da3', name: "Symbiosis", cost: 2500, m: 1.5, era: 7 },
         { id: 'da4', name: "Predation Tax", cost: 15000, m: 2.2, era: 9 },
-
-        // --- 2. CONSCIOUS COMPLEXITY ---
         { id: 'dc1', name: "Abstract Thought", cost: 100000, r: 5000, era: 11 },
         { id: 'dc2', name: "Collective Myth", cost: 1e6, m: 3.0, era: 12 },
         { id: 'dc3', name: "Digital Consciousness", cost: 5e7, r: 250000, era: 14 },
-
-        // --- 3. DIVINE COMPLEXITY ---
         { id: 'dd1', name: "Matrioshka Brain", cost: 1e9, r: 1e6, era: 17 },
         { id: 'dd2', name: "Entropy Reversal", cost: 1e11, m: 5.0, era: 19 },
         { id: 'dd3', name: "Chrono-Manipulation", cost: 1e14, r: 5e9, era: 22 },
         { id: 'dd4', name: "Multiversal Logic", cost: 1e16, m: 10.0, era: 24 }
     ]
 };
+
 
 
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
