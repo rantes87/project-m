@@ -177,7 +177,7 @@
     </div>
     <div style="display:flex; gap:10px;">
         <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.6em; padding: 6px 12px; filter:none; opacity:1;">ARC</button>
-        <button onclick="confirmTotalReset()" style="background:none; border:1px solid var(--danger-color); color:var(--danger-color); font-size:0.6em; padding: 6px 12px; filter:none; opacity:0.8;">RESET ALL</button>
+        <button onclick="confirmTotalReset()" style="background:none; border:1px solid var(--danger-color); color:var(--danger-color); font-size:0.6em; padding: 6px 12px; filter:none; opacity:0.8;">RES</button>
     </div>
 </div>
 
@@ -230,7 +230,35 @@
 <script>
     // --- CORE LOGIC ---
     const STORAGE_KEY = 'universal_master_v9';
-    const INITIAL_STATE = {
+    function confirmTotalReset() {
+        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
+            performTotalReset();
+        }
+    }
+
+    function performTotalReset() {
+        // Remove saved data
+        localStorage.removeItem(STORAGE_KEY);
+        
+        // Remove any lingering Big Crunch button
+        const oldBtn = document.getElementById('rebirth-btn');
+        if (oldBtn) oldBtn.remove();
+        
+        // Full white-out transition
+        document.getElementById('white-out').style.opacity = 1;
+        
+        setTimeout(() => {
+            // Reset state completely
+            state = JSON.parse(JSON.stringify(INITIAL_STATE));
+            
+            // Re-initialize everything
+            renderUpgrades();
+            updateUI();
+            document.getElementById('white-out').style.opacity = 0;
+            
+            alert("Total reset complete.\nWelcome back to the Void. ●");
+        }, 1000);
+    }const INITIAL_STATE = {
         uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
         combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
         archive: [], currentRotation: 0, clickSpinVelocity: 0,
