@@ -445,28 +445,30 @@ const lib = {
             h.style.borderColor = color;
         }
 
-        if (state.total >= s.goal && state.stage < stages.length - 1) {
-            document.getElementById('white-out').style.opacity = 0.5; 
-            setTimeout(()=>document.getElementById('white-out').style.opacity=0, 500);
-            if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
-            state.stage++; 
-            if(state.stage === 4 && !state.path) toggleModal('path-modal');
-            checkDyn(); 
-            renderUpgrades();
+        if (state.total >= s.goal) {
+    if (state.stage < stages.length - 1) {
+        // Normal Stage Progression
+        document.getElementById('white-out').style.opacity = 0.5; 
+        setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
+        if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
+        state.stage++; 
+        if(state.stage === 4 && !state.path) toggleModal('path-modal');
+        checkDyn(); 
+        renderUpgrades();
+    } else {
+        // Final Stage Reached: Trigger Big Crunch
+        // We can either trigger it automatically or show a special "REBIRTH" button
+        if (!document.getElementById('rebirth-btn')) {
+            const btn = document.createElement('button');
+            btn.id = 'rebirth-btn';
+            btn.innerText = "INITIATE BIG CRUNCH";
+            btn.style = "position:fixed; bottom:20px; z-index:9999; background:white; color:black; padding:20px; font-size:1.5em;";
+            btn.onclick = bigCrunch;
+            document.body.appendChild(btn);
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
+}
 
-    // Offline progression handling
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") {
-            applyOfflineEarnings();
-            updateUI();
-        } else {
-            lastOfflineTime = Date.now();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        }
-    });
 
     // Main game loop
     setInterval(() => {
