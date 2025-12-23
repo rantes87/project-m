@@ -364,16 +364,31 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 // Detect when user returns to the tab or app
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-        applyOfflineEarnings();
-        updateUI();
-    } else {
-        // Save precisely when they leave
-        state.lastTick = Date.now();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+function calculateOfflineEarnings() {
+    const now = Date.now();
+    // Use the saved lastTick, or now if it's the first time
+    const last = state.lastTick || now; 
+    const deltaMs = now - last;
+    const deltaSeconds = deltaMs / 1000;
+
+    // Only process if more than 1 second has passed
+    if (deltaSeconds > 1) {
+        const b = Math.pow(2, state.uni - 1);
+        const earnedAtp = state.atpRate * state.multi * b * deltaSeconds;
+        const earnedDna = state.dnaRate * b * deltaSeconds;
+
+        state.atp += earnedAtp;
+        state.total += earnedAtp;
+        state.dna += earnedDna;
+        
+        console.log(`Delta catch-up: ${deltaSeconds.toFixed(2)}s. Earned ${earnedAtp.toFixed(0)} ATP.`);
     }
-});
+    
+    // Always sync the tick to 'now' after calculating
+    state.lastTick = now;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
 
 // Update the tick in your existing interval
 setInterval(() => {
@@ -385,7 +400,27 @@ setInterval(() => {
     function checkDyn() {
         ['phys', 'dna'].forEach(type => { lib[type].forEach(u => { if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) { state.upgrades[type].push({...u, count: 0}); } }); });
     }
+// 1. Run on Load
+window.addEventListener('load', () => {
+    calculateOfflineEarnings();
+    updateUI();
+});
 
+// 2. Run when the user returns to the app (Mobile Tab Switch)
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        calculateOfflineEarnings();
+        updateUI();
+    }
+});
+
+// 3. Update the tick every second while the game is open
+setInterval(() => {
+    // We use a small delta here to keep points flowing smoothly while looking at the screen
+    calculateOfflineEarnings(); 
+    updateUI();
+}, 1000);
+    
     function animate() {
         const container = document.getElementById('specimen-container');
         let speed = 0.2 + ((state.combo - 1) * 0.3);
