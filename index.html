@@ -356,30 +356,32 @@ const lib = {
     }
 
     function buy(type, i) {
-        const u = state.upgrades[type][i];
-        const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
+    const u = state.upgrades[type][i];
+    const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
+    
+    if (state[cur] >= u.cost) {
+        state[cur] -= u.cost;
+        u.count++;
         
-        if (state[cur] >= u.cost) {
-            state[cur] -= u.cost;
-            u.count++;
-            
-            if (u.r) {
-                if (type === 'phys') state.atpRate += u.r;
-                else state.dnaRate += u.r;
-            }
-            if (u.m) {
-                state.multi *= u.m;
-            }
-            if (u.addClick) {
-                state.click += u.addClick;
-            }
-            
-            u.cost = Math.floor(u.cost * 1.6);
-            
-            renderUpgrades();
-            updateUI();
+        // Apply effects
+        if (u.r) {
+            if (type === 'phys') state.atpRate += u.r;
+            else state.dnaRate += u.r;
         }
+        if (u.m) {
+            state.multi *= u.m;
+        }
+        if (u.addClick) {
+            state.click += u.addClick;
+        }
+        
+        // Increase cost for next purchase
+        u.cost = Math.floor(u.cost * 1.6);
+        
+        renderUpgrades();
+        updateUI();
     }
+}
 
 
     function applyOfflineEarnings() {
