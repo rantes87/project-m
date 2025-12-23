@@ -509,7 +509,27 @@ function formatNum(n) {
     return (n / Math.pow(10, e * 3)).toFixed(1) + units[e-1];
 }
 
-
+function bigCrunch() {
+    // 1. Save the Archive and Universe level
+    const currentUni = state.uni + 1;
+    const currentArchive = [...state.archive];
+    
+    // 2. Reset the state to Initial, but carry over the prestige bonuses
+    state = JSON.parse(JSON.stringify(INITIAL_STATE));
+    state.uni = currentUni;
+    state.archive = currentArchive;
+    
+    // 3. Clear UI and re-initialize
+    document.getElementById('white-out').style.opacity = 1;
+    setTimeout(() => {
+        document.getElementById('white-out').style.opacity = 0;
+        renderUpgrades();
+        updateUI();
+        // Optional: Show a message about the new multiplier
+        alert(`Universe ${currentUni} created. Potential gain increased by ${Math.pow(2, currentUni - 1)}x!`);
+    }, 1000);
+}
+    
 
     function toggleModal(id) { 
         const m = document.getElementById(id); 
@@ -553,6 +573,8 @@ function formatNum(n) {
     function renderArchive() { 
         document.getElementById('specimen-history').innerHTML = state.archive.map(i => `<div class="history-card"><b>${stages[i].emoji} ${stages[i].name}</b></div>`).join(''); 
     }
+
+
     
     function selectPath(p) { 
         state.path = p; 
