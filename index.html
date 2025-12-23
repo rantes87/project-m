@@ -247,14 +247,35 @@
     };
 
     const stages = [
-        { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density." },
-        { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge." },
-        { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools." },
-        { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form." },
-        { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup." },
-        { name: "Genetic Code", emoji: "🌀", goal: 50000000, era: "GENETIC", desc: "Information encoded." },
-        { name: "Industrial Era", emoji: "⚙️", goal: 500000000, era: "TECHNOLOGICAL", desc: "Steam and steel." }
-    ];
+    // --- PHYSICAL/CHEMICAL ---
+    { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density." },
+    { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge." },
+    { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools." },
+    { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form." },
+    { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup." },
+    
+    // --- BIOLOGICAL ---
+    { name: "Genetic Code", emoji: "🌀", goal: 10000000, era: "GENETIC", desc: "Information encoded." },
+    { name: "Eukaryote", emoji: "🦠", goal: 50000000, era: "CELLULAR", desc: "Complex internal structures." },
+    { name: "Multicellular", emoji: "🧫", goal: 250000000, era: "BIOLOGICAL", desc: "Specialized cell colonies." },
+    { name: "Aquatic Life", emoji: "🐟", goal: 1000000000, era: "AQUATIC", desc: "The oceans teem." },
+    { name: "Terrestrial", emoji: "🦎", goal: 5000000000, era: "LAND", desc: "Walking on dry land." },
+    { name: "Primate", emoji: "🐒", goal: 25000000000, era: "PRIMATE", desc: "Social grooming and tools." },
+    
+    // --- CONSCIOUS/TECHNOLOGICAL ---
+    { name: "Sapiens", emoji: "🧠", goal: 100000000000, era: "SAPIENT", desc: "Awareness of self." },
+    { name: "Linguistic", emoji: "🗣️", goal: 500000000000, era: "CULTURAL", desc: "Sharing myths and knowledge." },
+    { name: "Industrial", emoji: "⚙️", goal: 2500000000000, era: "INDUSTRIAL", desc: "The era of machines." },
+    { name: "Digital", emoji: "💻", goal: 10000000000000, era: "DIGITAL", desc: "The world, networked." },
+    
+    // --- TRANSCENDENCE ---
+    { name: "Post-Human", emoji: "🧬", goal: 50000000000000, era: "CYBORG", desc: "Merging biology with silicon." },
+    { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits." },
+    { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars." },
+    { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware." },
+    { name: "Universal One", emoji: "✨", goal: 10000000000000000, era: "DIVINE", desc: "Entropy reversed. Unity." }
+];
+
 
     const lib = {
         phys: [
