@@ -455,23 +455,19 @@ const lib = {
             h.style.borderColor = color;
         }
 
-        if (state.total >= s.goal) {
-            if (state.stage < stages.length - 1) {
-                document.getElementById('white-out').style.opacity = 0.5; 
-                setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
-                if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
-                state.stage++; 
-                if(state.stage === 4 && !state.path) toggleModal('path-modal');
-                checkDyn(); 
-                renderUpgrades();
-            } else if (!document.getElementById('rebirth-btn')) {
-                const btn = document.createElement('button');
-                btn.id = 'rebirth-btn';
-                btn.innerText = "INITIATE BIG CRUNCH";
-                btn.style = "position:fixed; bottom:20px; z-index:9999; background:white; color:black; padding:20px; font-size:1.5em; cursor:pointer;";
-                btn.onclick = bigCrunch;
-                document.body.appendChild(btn);
-            }
+        if (state.total >= s.goal) {// --- Big Crunch Button Logic ---
+        const existingBtn = document.getElementById('rebirth-btn');
+        const isFinalStage = state.stage >= stages.length - 1 && state.total >= stages[stages.length - 1].goal;
+
+        if (isFinalStage && !existingBtn) {
+            const btn = document.createElement('button');
+            btn.id = 'rebirth-btn';
+            btn.innerText = "INITIATE BIG CRUNCH";
+            btn.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; background:white; color:black; padding:20px 40px; font-size:1.5em; cursor:pointer; border-radius:16px; font-family:'Orbitron';";
+            btn.onclick = bigCrunch;
+            document.body.appendChild(btn);
+        } else if (!isFinalStage && existingBtn) {
+            existingBtn.remove();
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
@@ -524,7 +520,8 @@ function bigCrunch() {
     // 1. Save the Archive and Universe level
     const currentUni = state.uni + 1;
     const currentArchive = [...state.archive];
-    
+    const oldBtn = document.getElementById('rebirth-btn');
+    if (oldBtn) oldBtn.remove();
     // 2. Reset the state to Initial, but carry over the prestige bonuses
     state = JSON.parse(JSON.stringify(INITIAL_STATE));
     state.uni = currentUni;
