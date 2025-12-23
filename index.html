@@ -356,35 +356,30 @@ const lib = {
     }
 
     function buy(type, i) {
-    const u = state.upgrades[type][i];
-    const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
-    
-    if (state[cur] >= u.cost) {
-        state[cur] -= u.cost;
-        u.count++;
+        const u = state.upgrades[type][i];
+        const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
         
-        // 1. Apply Passive Income
-        if (u.r) {
-            type === 'phys' ? state.atpRate += u.r : state.dnaRate += u.r;
+        if (state[cur] >= u.cost) {
+            state[cur] -= u.cost;
+            u.count++;
+            
+            if (u.r) {
+                if (type === 'phys') state.atpRate += u.r;
+                else state.dnaRate += u.r;
+            }
+            if (u.m) {
+                state.multi *= u.m;
+            }
+            if (u.addClick) {
+                state.click += u.addClick;
+            }
+            
+            u.cost = Math.floor(u.cost * 1.6);
+            
+            renderUpgrades();
+            updateUI();
         }
-        
-        // 2. Apply Multiplier (NEW)
-        if (u.m) {
-            state.multi *= u.m;
-        }
-        
-        // 3. Apply Click Power (NEW)
-        if (u.addClick) {
-            state.click += u.addClick;
-        }
-        
-        // 4. Increase Cost
-        u.cost = Math.floor(u.cost * 1.6);
-        
-        renderUpgrades(); 
-        updateUI();
     }
-}
 
 
     function applyOfflineEarnings() {
