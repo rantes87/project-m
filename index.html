@@ -619,28 +619,36 @@ function spawnFloaty(el, text, color) {
 
     function applyOfflineEarnings() {
     const now = Date.now();
-    // Compare current time to the last time the game saved
+    // Use the lastTick saved in the state, or "now" if it's a brand new game
     const lastTick = state.lastTick || now; 
     const elapsedSec = Math.floor((now - lastTick) / 1000);
 
-    if (elapsedSec > 5) { // Only trigger if away for more than 5 seconds
+    // Only process if the user was gone for more than 10 seconds
+    if (elapsedSec > 10) {
         const b = Math.pow(2, state.uni - 1);
         
-        // Calculate gains
+        // Use your rates and multipliers to find the gain per second
         const atpGain = (state.atpRate * state.multi * b) * elapsedSec;
         const dnaGain = (state.dnaRate * b) * elapsedSec;
 
-        state.atp += atpGain;
-        state.dna += dnaGain;
-        state.total += atpGain;
-
-        // Visual feedback for the player
         if (atpGain > 0 || dnaGain > 0) {
-            alert(`While you were gone for ${formatTime(elapsedSec)}, your universe evolved:\n\n+ ${formatNum(atpGain)} Potential\n+ ${formatNum(dnaGain)} Structure`);
+            state.atp += atpGain;
+            state.dna += dnaGain;
+            state.total += atpGain;
+
+            // Log it to console so you can verify it worked without a popup
+            console.log(`Offline: +${atpGain} ATP, +${dnaGain} DNA over ${elapsedSec}s`);
+            
+            // Optional: Use a non-blocking timeout for the alert so the UI can finish loading
+            setTimeout(() => {
+                alert(`THE UNIVERSE EXPANDED\n\nAway for: ${formatTime(elapsedSec)}\n+ ${formatNum(atpGain)} Potential\n+ ${formatNum(dnaGain)} Structure`);
+            }, 500);
         }
     }
-    state.lastTick = now; // Reset the tick to now
+    // Update the tick so it doesn't double-count
+    state.lastTick = now;
 }
+
 
 // Helper to make the alert look nice
 function formatTime(s) {
@@ -732,7 +740,7 @@ function formatTime(s) {
             existingBtn.remove();
         }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        
         // Add this line inside the updateUI function, right after the localStorage.setItem
 state.lastTick = Date.now(); 
 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
