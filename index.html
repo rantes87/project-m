@@ -175,7 +175,7 @@ button {
     width: var(--ripple-size);
     height: var(--ripple-size);
     transform: translate(-50%, -50%) scale(0);
-    opacity: 1.0;
+    opacity: 0.8;
     animation: ripple-final 0.8s cubic-bezier(0, 0, 0.2, 1) forwards;
     will-change: transform, opacity;
 }
@@ -325,35 +325,8 @@ button {
 <script>
     // --- CORE LOGIC ---
     const STORAGE_KEY = 'universal_master_v9';
-    function confirmTotalReset() {
-        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
-            performTotalReset();
-        }
-    }
 
-    function performTotalReset() {
-        // Remove saved data
-        localStorage.removeItem(STORAGE_KEY);
-        
-        // Remove any lingering Big Crunch button
-        const oldBtn = document.getElementById('rebirth-btn');
-        if (oldBtn) oldBtn.remove();
-        
-        // Full white-out transition
-        document.getElementById('white-out').style.opacity = 1;
-        
-        setTimeout(() => {
-            // Reset state completely
-            state = JSON.parse(JSON.stringify(INITIAL_STATE));
-            
-            // Re-initialize everything
-            renderUpgrades();
-            updateUI();
-            document.getElementById('white-out').style.opacity = 0;
-            
-            alert("Total reset complete.\nWelcome back to the Void. ●");
-        }, 1000);
-    }const INITIAL_STATE = {
+    const INITIAL_STATE = {
         uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
         combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
         archive: [], currentRotation: 0, clickSpinVelocity: 0,
@@ -369,7 +342,9 @@ button {
             ]
         }
     };
-
+    
+    let state;
+    
     const stages = [
     // --- PHYSICAL/CHEMICAL ---
     { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density.", scienceDesc: "A point of infinite density where spacetime curvature diverges, theorized as the Big Bang origin." },
@@ -449,11 +424,50 @@ const lib = {
     ]
 };
 
+function initGame() {
+    // 1. Load data
+    const saved = localStorage.getItem(STORAGE_KEY);
+    state = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(INITIAL_STATE));
+    applyOfflineEarnings();
+    checkDyn(); 
+    renderUpgrades(); 
+    updateUI(); 
+    animate();
+    startMainLoop();
+}
+    
+
+let lastOfflineTime = Date.now();
 
 
-    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
-    let lastOfflineTime = Date.now();
+    function confirmTotalReset() {
+        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
+            performTotalReset();
+        }
+    }
 
+    function performTotalReset() {
+        // Remove saved data
+        localStorage.removeItem(STORAGE_KEY);
+        
+        // Remove any lingering Big Crunch button
+        const oldBtn = document.getElementById('rebirth-btn');
+        if (oldBtn) oldBtn.remove();
+        
+        // Full white-out transition
+        document.getElementById('white-out').style.opacity = 1;
+        
+        setTimeout(() => {
+            // Reset state completely
+            state = JSON.parse(JSON.stringify(INITIAL_STATE));
+            
+            // Re-initialize everything
+            renderUpgrades();
+            updateUI();
+            document.getElementById('white-out').style.opacity = 0;
+            
+            alert("Total reset complete.\nWelcome back to the Void. ●");
+        }, 1000);
     function transmute() {
         if (state.atp >= 100000) {
             const amount = state.atp * 0.2;
@@ -559,18 +573,30 @@ function buy(type, i) {
 
 
     function applyOfflineEarnings() {
-        const now = Date.now();
-        const elapsedSec = Math.floor((now - lastOfflineTime) / 1000);
-        if (elapsedSec > 0) {
-            const b = Math.pow(2, state.uni - 1);
-            const gainPerSec = state.atpRate * state.multi * b;
-            const earned = gainPerSec * elapsedSec;
-            state.atp += earned;
-            state.dna += state.dnaRate * b * elapsedSec;
-            state.total += earned;
+    const now = Date.now();
+    const lastTick = state.lastTick || now; 
+    const elapsedSec = Math.floor((now - lastTick) / 1000);
+
+    // Only process if away for more than 10 seconds
+    if (elapsedSec > 10) {
+        const b = Math.pow(2, state.uni - 1);
+        const atpGain = (state.atpRate * state.multi * b) * elapsedSec;
+        const dnaGain = (state.dnaRate * b) * elapsedSec;
+
+        if (atpGain > 0 || dnaGain > 0) {
+            state.atp += atpGain;
+            state.dna += dnaGain;
+            state.total += atpGain;
+            
+            // We alert the user after a tiny delay so the UI is visible
+            setTimeout(() => {
+                alert(`THE UNIVERSE EXPANDED\n\nAway for: ${formatTime(elapsedSec)}\n+ ${formatNum(atpGain)} Potential\n+ ${formatNum(dnaGain)} Structure`);
+            }, 500);
         }
-        lastOfflineTime = now;
     }
+    // Set the tick to NOW so updateUI doesn't think we just started
+    state.lastTick = now;
+}
 
     function updateUI() {
         const b = Math.pow(2, state.uni - 1);
@@ -654,8 +680,23 @@ function buy(type, i) {
             existingBtn.remove();
         }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }  // ← This correctly closes the updateUI() function
+            // bottom of updateUI()
+    state.lastTick = Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// Separate the loop into a function
+function startMainLoop() {
+    setInterval(() => {
+        const b = Math.pow(2, state.uni - 1);
+        state.atp += (state.atpRate * state.multi * b) / 10;
+        state.dna += (state.dnaRate * b) / 10;
+        state.total += (state.atpRate * state.multi * b) / 10;
+        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
+        updateUI();
+    }, 100);
+}
+  }  // ← This correctly closes the updateUI() function
 
 
     // Main game loop
@@ -822,6 +863,8 @@ document.addEventListener('click', function(e) {
     renderUpgrades(); 
     updateUI(); 
     animate();
+    initGame();
+    
 </script>
 </body>
 </html>
