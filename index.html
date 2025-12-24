@@ -1,874 +1,1586 @@
 <!DOCTYPE html>
+
 <html lang="en" data-theme="dark">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Evolution: Master Build</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <style>
-        :root[data-theme="dark"] {
-            --atp-color: #00ff88; --atp-glow: rgba(0, 255, 136, 0.4);
-            --dna-color: #bc13fe; --dna-glow: rgba(188, 19, 254, 0.4);
-            --danger-color: #ff3860; --bg-color: #050508;
-            --panel-bg: rgba(12, 12, 20, 0.96);
-            --panel-border: 1px solid rgba(255, 255, 255, 0.1);
-            --text-primary: #ffffff; --text-secondary: #8899aa;
-            --combo-low: #00ff88; --combo-mid: #f1c40f; --combo-high: #ff3860;
-            --path-pred: #FF4433; --path-soc: #7DF9FF;
-        }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            background: var(--bg-color); 
-            color: var(--text-primary); 
-            margin: 0; 
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-        }
+    <meta charset="UTF-8">
 
-        #entropy-filter { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
-        #white-out { position: fixed; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        .reveal-target { transition: opacity 0.8s ease, transform 0.8s ease; }
+    <title>Universal Evolution: Master Build</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+
+    <style>
+
+        :root[data-theme="dark"] {
+
+            --atp-color: #00ff88; --atp-glow: rgba(0, 255, 136, 0.4);
+
+            --dna-color: #bc13fe; --dna-glow: rgba(188, 19, 254, 0.4);
+
+            --danger-color: #ff3860; --bg-color: #050508;
+
+            --panel-bg: rgba(12, 12, 20, 0.96);
+
+            --panel-border: 1px solid rgba(255, 255, 255, 0.1);
+
+            --text-primary: #ffffff; --text-secondary: #8899aa;
+
+            --combo-low: #00ff88; --combo-mid: #f1c40f; --combo-high: #ff3860;
+
+            --path-pred: #ff3860; --path-soc: #00d1ff;
+
+        }
+
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        
+
+        body { 
+
+            font-family: 'Roboto', sans-serif; 
+
+            background: var(--bg-color); 
+
+            color: var(--text-primary); 
+
+            margin: 0; 
+
+            min-height: 100vh;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            overflow-x: hidden;
+
+        }
+
+
+        #entropy-filter { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
+
+        #white-out { position: fixed; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
+
+
+        .reveal-target { transition: opacity 0.8s ease, transform 0.8s ease; }
+
 .history-card:hover {
-    background: rgba(0, 255, 136, 0.1) !important;
-    border-color: var(--atp-color) !important;
-    transform: scale(1.02);
-    transition: all 0.2s;
+
+    background: rgba(0, 255, 136, 0.1) !important;
+
+    border-color: var(--atp-color) !important;
+
+    transform: scale(1.02);
+
+    transition: all 0.2s;
+
 }
-        /* --- LAYOUT GRID --- */
-        #game-wrapper { 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 1800px;
-            padding: 20px;
-            padding-top: 100px;
-            gap: 20px;
-            flex-grow: 1;
-        }
 
-        @media (min-width: 1200px) {
-            #game-wrapper {
-                display: grid;
-                grid-template-columns: 350px 1fr 350px;
-                height: 100vh;
-                padding-top: 110px;
-                overflow: hidden;
-                align-items: start;
-            }
-            #panels-container { display: contents; }
-            .panel { height: 78vh !important; }
-        }
+        /* --- LAYOUT GRID --- */
 
-        /* Mobile Swipe Container */
-        @media (max-width: 1199px) {
-            #panels-container {
-                display: flex;
-                overflow-x: auto;
-                scroll-snap-type: x mandatory;
-                width: 100vw;
-                padding: 10px 20px 40px;
-                gap: 20px;
-            }
-            .panel {
-                min-width: 88vw;
-                scroll-snap-align: center;
-                height: 480px;
-            }
-        }
+        #game-wrapper { 
 
-        .panel { background: var(--panel-bg); border-radius: 24px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
-        .panel-header { font-family: 'Orbitron'; font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 2px;}
+            display: flex;
 
-        /* HUD & STABILITY */
-        .resource-hud { 
-            background: var(--panel-bg); padding: 15px 30px; border-radius: 50px; border: var(--panel-border); 
-            display: flex; justify-content: space-around; align-items: center; gap: 20px; width: 100%; max-width: 650px;
-        }
-        .res-box { width: 180px; text-align: center; flex-shrink: 0; }
-        .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.6em; white-space: nowrap; filter: drop-shadow(0 0 8px currentColor); }
+            flex-direction: column;
 
-        @media (max-width: 600px) {
-            .res-box { width: auto; flex: 1; }
-            .res-val { font-size: 1.2em; }
-            .resource-hud { padding: 10px 18px; gap: 10px; }
-        }
+            align-items: center;
+
+            width: 100%;
+
+            max-width: 1800px;
+
+            padding: 20px;
+
+            padding-top: 100px;
+
+            gap: 20px;
+
+            flex-grow: 1;
+
+        }
+
+
+        @media (min-width: 1200px) {
+
+            #game-wrapper {
+
+                display: grid;
+
+                grid-template-columns: 350px 1fr 350px;
+
+                height: 100vh;
+
+                padding-top: 110px;
+
+                overflow: hidden;
+
+                align-items: start;
+
+            }
+
+            #panels-container { display: contents; }
+
+            .panel { height: 78vh !important; }
+
+        }
+
+
+        /* Mobile Swipe Container */
+
+        @media (max-width: 1199px) {
+
+            #panels-container {
+
+                display: flex;
+
+                overflow-x: auto;
+
+                scroll-snap-type: x mandatory;
+
+                width: 100vw;
+
+                padding: 10px 20px 40px;
+
+                gap: 20px;
+
+            }
+
+            .panel {
+
+                min-width: 88vw;
+
+                scroll-snap-align: center;
+
+                height: 480px;
+
+            }
+
+        }
+
+
+        .panel { background: var(--panel-bg); border-radius: 24px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
+
+        .panel-header { font-family: 'Orbitron'; font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 2px;}
+
+
+        /* HUD & STABILITY */
+
+        .resource-hud { 
+
+            background: var(--panel-bg); padding: 15px 30px; border-radius: 50px; border: var(--panel-border); 
+
+            display: flex; justify-content: space-around; align-items: center; gap: 20px; width: 100%; max-width: 650px;
+
+        }
+
+        .res-box { width: 180px; text-align: center; flex-shrink: 0; }
+
+        .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.6em; white-space: nowrap; filter: drop-shadow(0 0 8px currentColor); }
+
+
+        @media (max-width: 600px) {
+
+            .res-box { width: auto; flex: 1; }
+
+            .res-val { font-size: 1.2em; }
+
+            .resource-hud { padding: 10px 18px; gap: 10px; }
+
+        }
+
 /* Add to <style> - Universal Button Ripple & Active Effects */
+
 button {
-    position: relative;
+
+    position: relative;
+
 }
+
 /* Remove previous ::before fill logic */
+
 .upgrade-card button::before { display: none; }
 
+
 .upgrade-card button {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    background: rgba(255, 255, 255, 0.03);
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    color: var(--text-secondary);
+
+    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
 }
+
 /* Ensure the card can scale without overlapping others weirdly */
+
 .upgrade-card {
-    position: relative;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
-    will-change: transform;
+
+    position: relative;
+
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+
+    will-change: transform;
+
 }
+
+
+/* The "Pop" Animation */
+
+/* Enhanced Pop Animation */
+
+@keyframes upgrade-flash {
+
+    0% { transform: scale(1); background: rgba(255, 255, 255, 0.4); z-index: 10; }
+
+    30% { transform: scale(1.1); background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 30px var(--atp-glow); }
+
+    100% { transform: scale(1); background: rgba(255, 255, 255, 0.03); z-index: 1; }
+
+}
+
 
 .upgrade-purchased {
-    animation: upgrade-flash 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both !important;
+
+    animation: upgrade-flash 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both !important;
+
 }
+
 
 /* Floating Gain Text */
+
 @keyframes floatUp {
-    0% { transform: translate(-50%, 0); opacity: 1; }
-    100% { transform: translate(-50%, -60px); opacity: 0; }
+
+    0% { transform: translate(-50%, 0); opacity: 1; }
+
+    100% { transform: translate(-50%, -60px); opacity: 0; }
+
 }
 
+
 .floaty-text {
-    position: fixed;
-    font-family: 'Orbitron';
-    font-size: 0.8em;
-    font-weight: bold;
-    pointer-events: none;
-    z-index: 10000;
-    text-shadow: 0 0 10px currentColor;
-    animation: floatUp 0.8s ease-out forwards;
+
+    position: fixed;
+
+    font-family: 'Orbitron';
+
+    font-size: 0.8em;
+
+    font-weight: bold;
+
+    pointer-events: none;
+
+    z-index: 10000;
+
+    text-shadow: 0 0 10px currentColor;
+
+    animation: floatUp 0.8s ease-out forwards;
+
 }
+
 
 
 /* Make buttons look more interactive on hover */
+
 .upgrade-card button:not(:disabled):hover {
-    transform: scale(1.05);
-    background: var(--atp-color);
-    color: #000;
+
+    transform: scale(1.05);
+
+    background: var(--atp-color);
+
+    color: #000;
+
 }
+
 
 
 @keyframes upgrade-flash {
-    0% { transform: scale(1); background: rgba(255, 255, 255, 0.2); }
-    40% { transform: scale(1.05); border-color: #fff; box-shadow: 0 0 20px #fff; }
-    100% { transform: scale(1); background: transparent; }
+
+    0% { transform: scale(1); background: rgba(255, 255, 255, 0.2); }
+
+    40% { transform: scale(1.05); border-color: #fff; box-shadow: 0 0 20px #fff; }
+
+    100% { transform: scale(1); background: transparent; }
+
 }
 
+
 /* DNA color override for DNA buttons */
+
 #dna-panel .upgrade-card button:not(:disabled) {
-    border-color: var(--dna-color);
-    color: var(--dna-color);
-    filter: drop-shadow(0 0 5px var(--dna-glow));
+
+    border-color: var(--dna-color);
+
+    color: var(--dna-color);
+
+    filter: drop-shadow(0 0 5px var(--dna-glow));
+
 }
+
 
 
 /* Ultra-Smooth Ripple - Now Visible & Themed */
+
 .ripple {
-    position: absolute;
-    border-radius: 50%;
-    /* Remove the hardcoded background here so JS can set it dynamically */
-    pointer-events: none;
-    left: var(--ripple-x);
-    top: var(--ripple-y);
-    width: var(--ripple-size);
-    height: var(--ripple-size);
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0.8;
-    animation: ripple-final 0.8s cubic-bezier(0, 0, 0.2, 1) forwards;
-    will-change: transform, opacity;
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    /* Remove the hardcoded background here so JS can set it dynamically */
+
+    pointer-events: none;
+
+    left: var(--ripple-x);
+
+    top: var(--ripple-y);
+
+    width: var(--ripple-size);
+
+    height: var(--ripple-size);
+
+    transform: translate(-50%, -50%) scale(0);
+
+    opacity: 0.8;
+
+    animation: ripple-final 0.8s cubic-bezier(0, 0, 0.2, 1) forwards;
+
+    will-change: transform, opacity;
+
 }
+
 
 
 @keyframes ripple-final {
-    to {
-        transform: translate(-50%, -50%) scale(2);
-        opacity: 0;
-    }
+
+    to {
+
+        transform: translate(-50%, -50%) scale(2);
+
+        opacity: 0;
+
+    }
+
 }
-        /* BUTTON BRIGHTENING ENGINE */
-        button { 
-            font-family: 'Orbitron'; font-size: 0.7em; padding: 10px 15px; border-radius: 8px; border: none; 
-            cursor: pointer; background: var(--atp-color); font-weight: bold; 
-            transition: all 0.3s ease;
-            filter: grayscale(1) opacity(0.25);
-        }
-        button:not(:disabled) { 
-            filter: grayscale(0) opacity(1); 
-            box-shadow: 0 0 15px var(--atp-glow);
-        }
-        
-        #transmute-btn { 
-            width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--dna-color); 
-            background: rgba(188, 19, 254, 0.1); color: var(--dna-color); font-size: 1.2em;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;
-            filter: grayscale(1) opacity(0.25);
-        }
-        #transmute-btn:not(:disabled) { 
-            background: var(--dna-color); color: #fff; 
-            box-shadow: 0 0 15px var(--dna-glow); 
-            filter: grayscale(0) opacity(1);
-        }
 
-        /* SPECIMEN DISPLAY & FIXED HALO */
-        .main-display { display: flex; flex-direction: column; align-items: center; width: 100%; }
-        #specimen-wrapper {
-            position: relative;
-            width: 260px; height: 260px;
-            margin: 30px 0;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 5;
-        }
-        #specimen-container { 
-            width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center; 
-            border-radius: 50%; border: 2px solid var(--atp-color); 
-            box-shadow: 0 0 40px var(--atp-glow);
-            transition: border-color 0.5s, box-shadow 0.5s;
-            z-index: 5; 
-            will-change: transform;
-        }
-        #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
-        #specimen:active { transform: scale(0.92); }
-        #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
+        /* BUTTON BRIGHTENING ENGINE */
 
-        #resonance-halo { 
-            position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; 
-            opacity: 0; transition: opacity 0.4s; background: rgba(0,0,0,0.85); 
-            padding: 6px 16px; border-radius: 30px; border: 2px solid var(--atp-color); 
-            z-index: 20; pointer-events: none; white-space: nowrap; font-size: 0.7em;
-        }
-        #resonance-halo.active { opacity: 1; }
+        button { 
 
-        .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: var(--panel-border); z-index: 1000; }
-        .bunny-link { font-size: 2em; text-decoration: none; display: none; animation: bunnyPulse 2s infinite ease-in-out; margin-left: 15px; cursor: pointer; }
+            font-family: 'Orbitron'; font-size: 0.7em; padding: 10px 15px; border-radius: 8px; border: none; 
 
-        .upgrade-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--atp-color); }
-        #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: 0.4s; }
-        
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 20px; }
-        .modal-content { max-width: 800px; width: 100%; background: #111; padding: 30px; border-radius: 24px; border: 1px solid var(--atp-color); text-align: center; }
-        .hidden-panel { opacity: 0 !important; pointer-events: none !important; }
-        
-        #specimen-history { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 50vh; overflow-y: auto; padding: 10px; margin-top: 20px; }
-        .history-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; font-size: 0.8em; border: 1px solid rgba(255,255,255,0.1); }
-    </style>
+            cursor: pointer; background: var(--atp-color); font-weight: bold; 
+
+            transition: all 0.3s ease;
+
+            filter: grayscale(1) opacity(0.25);
+
+        }
+
+        button:not(:disabled) { 
+
+            filter: grayscale(0) opacity(1); 
+
+            box-shadow: 0 0 15px var(--atp-glow);
+
+        }
+
+        
+
+        #transmute-btn { 
+
+            width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--dna-color); 
+
+            background: rgba(188, 19, 254, 0.1); color: var(--dna-color); font-size: 1.2em;
+
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;
+
+            filter: grayscale(1) opacity(0.25);
+
+        }
+
+        #transmute-btn:not(:disabled) { 
+
+            background: var(--dna-color); color: #fff; 
+
+            box-shadow: 0 0 15px var(--dna-glow); 
+
+            filter: grayscale(0) opacity(1);
+
+        }
+
+
+        /* SPECIMEN DISPLAY & FIXED HALO */
+
+        .main-display { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+        #specimen-wrapper {
+
+            position: relative;
+
+            width: 260px; height: 260px;
+
+            margin: 30px 0;
+
+            display: flex; justify-content: center; align-items: center;
+
+            z-index: 5;
+
+        }
+
+        #specimen-container { 
+
+            width: 100%; height: 100%;
+
+            display: flex; justify-content: center; align-items: center; 
+
+            border-radius: 50%; border: 2px solid var(--atp-color); 
+
+            box-shadow: 0 0 40px var(--atp-glow);
+
+            transition: border-color 0.5s, box-shadow 0.5s;
+
+            z-index: 5; 
+
+            will-change: transform;
+
+        }
+
+        #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
+
+        #specimen:active { transform: scale(0.92); }
+
+        #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
+
+
+        #resonance-halo { 
+
+            position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; 
+
+            opacity: 0; transition: opacity 0.4s; background: rgba(0,0,0,0.85); 
+
+            padding: 6px 16px; border-radius: 30px; border: 2px solid var(--atp-color); 
+
+            z-index: 20; pointer-events: none; white-space: nowrap; font-size: 0.7em;
+
+        }
+
+        #resonance-halo.active { opacity: 1; }
+
+
+        .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: var(--panel-border); z-index: 1000; }
+
+        .bunny-link { font-size: 2em; text-decoration: none; display: none; animation: bunnyPulse 2s infinite ease-in-out; margin-left: 15px; cursor: pointer; }
+
+
+        .upgrade-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--atp-color); }
+
+        #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: 0.4s; }
+
+        
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 20px; }
+
+        .modal-content { max-width: 800px; width: 100%; background: #111; padding: 30px; border-radius: 24px; border: 1px solid var(--atp-color); text-align: center; }
+
+        .hidden-panel { opacity: 0 !important; pointer-events: none !important; }
+
+        
+
+        #specimen-history { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 50vh; overflow-y: auto; padding: 10px; margin-top: 20px; }
+
+        .history-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; font-size: 0.8em; border: 1px solid rgba(255,255,255,0.1); }
+
+    </style>
+
 </head>
+
 <body>
+
 
 <div id="entropy-filter"></div><div id="white-out"></div>
 
+
 <div class="top-bar reveal-target">
-    <div style="display:flex; align-items: center;">
-        <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing: 1px;">UNI: <span id="uni-val" style="color:gold">1</span> | ERA: <span id="era-val">VOID</span></div>
-        <a href="https://swift4prez.com" target="_blank" class="bunny-link" id="celestial-bunny">🐰</a>
-    </div>
-    <div style="display:flex; gap:10px;">
-        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.6em; padding: 6px 12px; filter:none; opacity:1;">ARC</button>
-        <button onclick="confirmTotalReset()" style="background:none; border:1px solid var(--danger-color); color:var(--danger-color); font-size:0.6em; padding: 6px 12px; filter:none; opacity:0.8;">RES</button>
-    </div>
+
+    <div style="display:flex; align-items: center;">
+
+        <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing: 1px;">UNI: <span id="uni-val" style="color:gold">1</span> | ERA: <span id="era-val">VOID</span></div>
+
+        <a href="https://swift4prez.com" target="_blank" class="bunny-link" id="celestial-bunny">🐰</a>
+
+    </div>
+
+    <div style="display:flex; gap:10px;">
+
+        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.6em; padding: 6px 12px; filter:none; opacity:1;">ARC</button>
+
+        <button onclick="confirmTotalReset()" style="background:none; border:1px solid var(--danger-color); color:var(--danger-color); font-size:0.6em; padding: 6px 12px; filter:none; opacity:0.8;">RES</button>
+
+    </div>
+
 </div>
+
 
 <div id="game-wrapper">
-    <div class="main-display">
-        <div class="resource-hud reveal-target">
-            <div class="res-box">
-                <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
-                <div id="atp-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">POTENTIAL</div>
-                <div id="atp-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
-            </div>
-            <button id="transmute-btn" onclick="transmute()" title="Convert Energy to Structure">⇄</button>
-            <div class="res-box">
-                <div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div>
-                <div id="dna-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">STRUCTURE</div>
-                <div id="dna-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
-            </div>
-        </div>
 
-        <div id="specimen-wrapper">
-            <div id="resonance-halo"><span id="combo-val">x1.0</span></div>
-            <div id="specimen-container">
-                <div id="specimen" class="singularity" onclick="handleClick()">●</div>
-            </div>
-        </div>
+    <div class="main-display">
 
-        <div style="text-align:center; width: 100%; max-width: 500px;">
-            <h2 id="stage-name" class="reveal-target" style="font-family:'Orbitron'; margin:0; font-size:1.3em;">Singularity</h2>
-            <div style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px; margin:15px 0; overflow:hidden;"><div id="progress-fill"></div></div>
-            <div id="progress-stats" class="reveal-target" style="font-family:'Orbitron'; font-size:0.6em; opacity:0.6;">0 / 500</div>
-            <p id="stage-desc" class="reveal-target" style="font-size:0.8em; font-style:italic; margin-top:10px; opacity:0.7;"></p>
-        </div>
-    </div>
+        <div class="resource-hud reveal-target">
 
-    <div id="panels-container">
-        <div class="panel reveal-target" id="phys-panel">
-            <div class="panel-header">Physical Evolution</div>
-            <div id="phys-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
-        </div>
-        <div class="panel reveal-target hidden-panel" id="dna-panel">
-            <div class="panel-header" style="color:var(--dna-color)">Complexity Research</div>
-            <div id="dna-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
-        </div>
-    </div>
+            <div class="res-box">
+
+                <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
+
+                <div id="atp-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">POTENTIAL</div>
+
+                <div id="atp-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
+
+            </div>
+
+            <button id="transmute-btn" onclick="transmute()" title="Convert Energy to Structure">⇄</button>
+
+            <div class="res-box">
+
+                <div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div>
+
+                <div id="dna-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">STRUCTURE</div>
+
+                <div id="dna-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
+
+            </div>
+
+        </div>
+
+
+        <div id="specimen-wrapper">
+
+            <div id="resonance-halo"><span id="combo-val">x1.0</span></div>
+
+            <div id="specimen-container">
+
+                <div id="specimen" class="singularity" onclick="handleClick()">●</div>
+
+            </div>
+
+        </div>
+
+
+        <div style="text-align:center; width: 100%; max-width: 500px;">
+
+            <h2 id="stage-name" class="reveal-target" style="font-family:'Orbitron'; margin:0; font-size:1.3em;">Singularity</h2>
+
+            <div style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px; margin:15px 0; overflow:hidden;"><div id="progress-fill"></div></div>
+
+            <div id="progress-stats" class="reveal-target" style="font-family:'Orbitron'; font-size:0.6em; opacity:0.6;">0 / 500</div>
+
+            <p id="stage-desc" class="reveal-target" style="font-size:0.8em; font-style:italic; margin-top:10px; opacity:0.7;"></p>
+
+        </div>
+
+    </div>
+
+
+    <div id="panels-container">
+
+        <div class="panel reveal-target" id="phys-panel">
+
+            <div class="panel-header">Physical Evolution</div>
+
+            <div id="phys-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
+
+        </div>
+
+        <div class="panel reveal-target hidden-panel" id="dna-panel">
+
+            <div class="panel-header" style="color:var(--dna-color)">Complexity Research</div>
+
+            <div id="dna-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
+
+        </div>
+
+    </div>
+
 </div>
+
 
 <div id="path-modal" class="modal"><div class="modal-content"><h2>CHOOSE PATH</h2><div style="display:flex; gap:15px; margin-top:20px;"><button onclick="selectPath('predatory')" style="background:var(--path-pred); filter:none; opacity:1; flex:1;">HUNTER</button><button onclick="selectPath('social')" style="background:var(--path-soc); filter:none; opacity:1; flex:1;">HIVE MIND</button></div></div></div>
-<div id="archive-modal" class="modal"><div class="modal-content"><h1>COSMIC ARCHIVE</h1><div id="specimen-history"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px; filter:none; opacity:1;">CLOSE</button></div></div>
-<div id="science-modal" class="modal">
-    <div class="modal-content" style="max-width: 600px; text-align: left;">
-        <h2 id="science-title" style="font-family:'Orbitron'; color: var(--atp-color);"></h2>
-        <p id="science-desc" style="font-size: 1em; line-height: 1.6; opacity: 0.9; white-space: pre-wrap;"></p>
-        <button onclick="toggleModal('science-modal')" style="margin-top: 20px; filter: none; opacity: 1;">CLOSE</button>
-    </div>
-</div>
-<script>
-    // --- CORE LOGIC ---
-    const STORAGE_KEY = 'universal_master_v9';
 
-    const INITIAL_STATE = {
-        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
-        combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
-        archive: [], currentRotation: 0, clickSpinVelocity: 0,
-        upgrades: {
-            phys: [
-                { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, count: 0, era: 0 },
-                { id: 'p2', name: "Quantum Spark", cost: 80, r: 5, count: 0, era: 1 },
-                { id: 'p3', name: "Atomic Bonding", cost: 1000, r: 50, count: 0, era: 2 }
-            ],
-            dna: [
-                { id: 'd1', name: "Data Streams", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
-                { id: 'd2', name: "Neural Logic", cost: 1000, m: 3.5, count: 0, era: 7 }
-            ]
-        }
-    };
-    
-    let state;
-    
-    const stages = [
-    // --- PHYSICAL/CHEMICAL ---
-    { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density.", scienceDesc: "A point of infinite density where spacetime curvature diverges, theorized as the Big Bang origin." },
-    { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge.", scienceDesc: "Quarks and leptons form in quark-gluon plasma ~10⁻⁶ seconds post-Big Bang, bound by strong force." },
-    { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools.", scienceDesc: "Electrons bind to nuclei ~380,000 years post-Big Bang, forming neutral atoms during recombination." },
-    { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form.", scienceDesc: "First H₂ molecules form via radiative association as universe cools further." },
-    { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup.", scienceDesc: "Carbon-based molecules like amino acids arise in primordial soup via hydrothermal vents or meteorites." },
-    
-    // --- BIOLOGICAL ---
-    { name: "Genetic Code", emoji: "🌀", goal: 10000000, era: "GENETIC", desc: "Information encoded.", scienceDesc: "DNA/RNA triplet codons translate nucleotides to amino acids, evolved from RNA world hypothesis." },
-    { name: "Eukaryote", emoji: "🦠", goal: 50000000, era: "CELLULAR", desc: "Complex internal structures.", scienceDesc: "Nucleus and organelles via endosymbiosis of bacteria ~2 billion years ago." },
-    { name: "Multicellular", emoji: "🧫", goal: 250000000, era: "BIOLOGICAL", desc: "Specialized cell colonies.", scienceDesc: "Cell adhesion and signaling enable specialization ~1 billion years ago." },
-    { name: "Aquatic Life", emoji: "🐟", goal: 1000000000, era: "AQUATIC", desc: "The oceans teem.", scienceDesc: "Cambrian explosion: diverse vertebrates with gills and fins ~540 million years ago." },
-    { name: "Terrestrial", emoji: "🦎", goal: 5000000000, era: "LAND", desc: "Walking on dry land.", scienceDesc: "Tetrapods evolve lungs and limbs ~400 million years ago for land colonization." },
-    { name: "Primate", emoji: "🐒", goal: 25000000000, era: "PRIMATE", desc: "Social grooming and tools.", scienceDesc: "Arboreal mammals with stereoscopic vision and grasping hands ~65 million years ago." },
-    
-    // --- CONSCIOUS/TECHNOLOGICAL ---
-    { name: "Sapiens", emoji: "🧠", goal: 100000000000, era: "SAPIENT", desc: "Awareness of self.", scienceDesc: "Homo sapiens: 1,350 cm³ brain enables symbolic thought ~300,000 years ago." },
-    { name: "Linguistic", emoji: "🗣️", goal: 500000000000, era: "CULTURAL", desc: "Sharing myths and knowledge.", scienceDesc: "Complex syntax and recursion evolve ~50,000 years ago for abstract communication." },
-    { name: "Industrial", emoji: "⚙️", goal: 2500000000000, era: "INDUSTRIAL", desc: "The era of machines.", scienceDesc: "Steam engines apply thermodynamics for mechanized production from 1760s." },
-    { name: "Digital", emoji: "💻", goal: 10000000000000, era: "DIGITAL", desc: "The world, networked.", scienceDesc: "Transistors enable binary computing and global internet ~1940s onward." },
-    
-    // --- TRANSCENDENCE ---
-    { name: "Post-Human", emoji: "🧬", goal: 50000000000000, era: "CYBORG", desc: "Merging biology with silicon.", scienceDesc: "CRISPR and neural implants enhance humans beyond natural evolution." },
-    { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits.", scienceDesc: "AI surpasses human intelligence, triggering recursive self-improvement (Kurzweil ~2045)." },
-    { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars.", scienceDesc: "Orbital satellites capture 100% stellar output, Kardashev Type II civilization." },
-    { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware.", scienceDesc: "Teilhard de Chardin: ultimate complexity converges matter and consciousness." },
-    { name: "Universal One", emoji: "✨", goal: 10000000000000000, era: "DIVINE", desc: "Entropy reversed. Unity.", scienceDesc: "Panpsychism culminates: cosmos achieves holistic self-awareness." },
-    // --- DIVINE / GODHOOD ---
-    { name: "Solar Deity", emoji: "☀️", goal: 1e17, era: "SOLAR", desc: "Your will dictates the fusion of stars.", scienceDesc: "Matrioshka brain: nested Dyson shells compute at stellar core temperatures." },
-    { name: "Galactic Overmind", emoji: "🌌", goal: 1e19, era: "GALACTIC_GOD", desc: "A billion stars, a single thought.", scienceDesc: "Kardashev Type III: galaxy-spanning network processes information at galactic scale." },
-    { name: "Reality Weaver", emoji: "🧶", goal: 1e21, era: "DIMENSIONAL", desc: "Tapping into the source code of physics.", scienceDesc: "Quantum gravity mastery: engineering extra dimensions and fundamental constants." },
-    { name: "The One", emoji: "👁️‍🗨️", goal: 1e23, era: "SUPREME", desc: "Beyond time. Beyond space. Everything is you.", scienceDesc: "Simulation hypothesis apex: total control over multiversal base reality." },
-    { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew.", scienceDesc: "Gravitational recollapse: expansion reverses, forming new singularity for cyclic Big Bang." }
+<div id="archive-modal" class="modal"><div class="modal-content"><h1>COSMIC ARCHIVE</h1><div id="specimen-history"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px; filter:none; opacity:1;">CLOSE</button></div></div>
+
+<div id="science-modal" class="modal">
+
+    <div class="modal-content" style="max-width: 600px; text-align: left;">
+
+        <h2 id="science-title" style="font-family:'Orbitron'; color: var(--atp-color);"></h2>
+
+        <p id="science-desc" style="font-size: 1em; line-height: 1.6; opacity: 0.9; white-space: pre-wrap;"></p>
+
+        <button onclick="toggleModal('science-modal')" style="margin-top: 20px; filter: none; opacity: 1;">CLOSE</button>
+
+    </div>
+
+</div>
+
+<script>
+
+    // --- CORE LOGIC ---
+
+    const STORAGE_KEY = 'universal_master_v9';
+
+    function confirmTotalReset() {
+
+        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
+
+            performTotalReset();
+
+        }
+
+    }
+
+
+    function performTotalReset() {
+
+        // Remove saved data
+
+        localStorage.removeItem(STORAGE_KEY);
+
+        
+
+        // Remove any lingering Big Crunch button
+
+        const oldBtn = document.getElementById('rebirth-btn');
+
+        if (oldBtn) oldBtn.remove();
+
+        
+
+        // Full white-out transition
+
+        document.getElementById('white-out').style.opacity = 1;
+
+        
+
+        setTimeout(() => {
+
+            // Reset state completely
+
+            state = JSON.parse(JSON.stringify(INITIAL_STATE));
+
+            
+
+            // Re-initialize everything
+
+            renderUpgrades();
+
+            updateUI();
+
+            document.getElementById('white-out').style.opacity = 0;
+
+            
+
+            alert("Total reset complete.\nWelcome back to the Void. ●");
+
+        }, 1000);
+
+    }const INITIAL_STATE = {
+
+        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
+
+        combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
+
+        archive: [], currentRotation: 0, clickSpinVelocity: 0,
+
+        upgrades: {
+
+            phys: [
+
+                { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, count: 0, era: 0 },
+
+                { id: 'p2', name: "Quantum Spark", cost: 80, r: 5, count: 0, era: 1 },
+
+                { id: 'p3', name: "Atomic Bonding", cost: 1000, r: 50, count: 0, era: 2 }
+
+            ],
+
+            dna: [
+
+                { id: 'd1', name: "Data Streams", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
+
+                { id: 'd2', name: "Neural Logic", cost: 1000, m: 3.5, count: 0, era: 7 }
+
+            ]
+
+        }
+
+    };
+
+
+    const stages = [
+
+    // --- PHYSICAL/CHEMICAL ---
+
+    { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density.", scienceDesc: "A point of infinite density where spacetime curvature diverges, theorized as the Big Bang origin." },
+
+    { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge.", scienceDesc: "Quarks and leptons form in quark-gluon plasma ~10⁻⁶ seconds post-Big Bang, bound by strong force." },
+
+    { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools.", scienceDesc: "Electrons bind to nuclei ~380,000 years post-Big Bang, forming neutral atoms during recombination." },
+
+    { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form.", scienceDesc: "First H₂ molecules form via radiative association as universe cools further." },
+
+    { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup.", scienceDesc: "Carbon-based molecules like amino acids arise in primordial soup via hydrothermal vents or meteorites." },
+
+    
+
+    // --- BIOLOGICAL ---
+
+    { name: "Genetic Code", emoji: "🌀", goal: 10000000, era: "GENETIC", desc: "Information encoded.", scienceDesc: "DNA/RNA triplet codons translate nucleotides to amino acids, evolved from RNA world hypothesis." },
+
+    { name: "Eukaryote", emoji: "🦠", goal: 50000000, era: "CELLULAR", desc: "Complex internal structures.", scienceDesc: "Nucleus and organelles via endosymbiosis of bacteria ~2 billion years ago." },
+
+    { name: "Multicellular", emoji: "🧫", goal: 250000000, era: "BIOLOGICAL", desc: "Specialized cell colonies.", scienceDesc: "Cell adhesion and signaling enable specialization ~1 billion years ago." },
+
+    { name: "Aquatic Life", emoji: "🐟", goal: 1000000000, era: "AQUATIC", desc: "The oceans teem.", scienceDesc: "Cambrian explosion: diverse vertebrates with gills and fins ~540 million years ago." },
+
+    { name: "Terrestrial", emoji: "🦎", goal: 5000000000, era: "LAND", desc: "Walking on dry land.", scienceDesc: "Tetrapods evolve lungs and limbs ~400 million years ago for land colonization." },
+
+    { name: "Primate", emoji: "🐒", goal: 25000000000, era: "PRIMATE", desc: "Social grooming and tools.", scienceDesc: "Arboreal mammals with stereoscopic vision and grasping hands ~65 million years ago." },
+
+    
+
+    // --- CONSCIOUS/TECHNOLOGICAL ---
+
+    { name: "Sapiens", emoji: "🧠", goal: 100000000000, era: "SAPIENT", desc: "Awareness of self.", scienceDesc: "Homo sapiens: 1,350 cm³ brain enables symbolic thought ~300,000 years ago." },
+
+    { name: "Linguistic", emoji: "🗣️", goal: 500000000000, era: "CULTURAL", desc: "Sharing myths and knowledge.", scienceDesc: "Complex syntax and recursion evolve ~50,000 years ago for abstract communication." },
+
+    { name: "Industrial", emoji: "⚙️", goal: 2500000000000, era: "INDUSTRIAL", desc: "The era of machines.", scienceDesc: "Steam engines apply thermodynamics for mechanized production from 1760s." },
+
+    { name: "Digital", emoji: "💻", goal: 10000000000000, era: "DIGITAL", desc: "The world, networked.", scienceDesc: "Transistors enable binary computing and global internet ~1940s onward." },
+
+    
+
+    // --- TRANSCENDENCE ---
+
+    { name: "Post-Human", emoji: "🧬", goal: 50000000000000, era: "CYBORG", desc: "Merging biology with silicon.", scienceDesc: "CRISPR and neural implants enhance humans beyond natural evolution." },
+
+    { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits.", scienceDesc: "AI surpasses human intelligence, triggering recursive self-improvement (Kurzweil ~2045)." },
+
+    { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars.", scienceDesc: "Orbital satellites capture 100% stellar output, Kardashev Type II civilization." },
+
+    { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware.", scienceDesc: "Teilhard de Chardin: ultimate complexity converges matter and consciousness." },
+
+    { name: "Universal One", emoji: "✨", goal: 10000000000000000, era: "DIVINE", desc: "Entropy reversed. Unity.", scienceDesc: "Panpsychism culminates: cosmos achieves holistic self-awareness." },
+
+    // --- DIVINE / GODHOOD ---
+
+    { name: "Solar Deity", emoji: "☀️", goal: 1e17, era: "SOLAR", desc: "Your will dictates the fusion of stars.", scienceDesc: "Matrioshka brain: nested Dyson shells compute at stellar core temperatures." },
+
+    { name: "Galactic Overmind", emoji: "🌌", goal: 1e19, era: "GALACTIC_GOD", desc: "A billion stars, a single thought.", scienceDesc: "Kardashev Type III: galaxy-spanning network processes information at galactic scale." },
+
+    { name: "Reality Weaver", emoji: "🧶", goal: 1e21, era: "DIMENSIONAL", desc: "Tapping into the source code of physics.", scienceDesc: "Quantum gravity mastery: engineering extra dimensions and fundamental constants." },
+
+    { name: "The One", emoji: "👁️‍🗨️", goal: 1e23, era: "SUPREME", desc: "Beyond time. Beyond space. Everything is you.", scienceDesc: "Simulation hypothesis apex: total control over multiversal base reality." },
+
+    { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew.", scienceDesc: "Gravitational recollapse: expansion reverses, forming new singularity for cyclic Big Bang." }
+
 ];
 
+
 const lib = {
-    phys: [
-        // --- 1. MICRO ERA (VOID to MOLECULAR) ---
-        { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, era: 0 },
-        { id: 'pa1', name: "Neutrino Pulse", cost: 150, r: 12, era: 1 },
-        { id: 'pa2', name: "Electron Shell", cost: 1200, r: 80, era: 2 },
-        { id: 'pa3', name: "Covalent Bond", cost: 8000, r: 450, era: 3 },
-        { id: 'pa4', name: "Crystal Lattice", cost: 50000, r: 2200, era: 4 },
 
-        // --- 2. BIOLOGICAL ERA (GENETIC to LAND) ---
-        { id: 'pb1', name: "Mitochondria", cost: 100000, r: 8000, era: 6 },
-        { id: 'pb2', name: "Neural Bundles", cost: 1e6, r: 45000, era: 8 },
-        { id: 'pb3', name: "Calcified Skeleton", cost: 2.5e7, r: 180000, era: 9 },
-        { id: 'pb4', name: "Lung Adaptation", cost: 5e8, r: 900000, era: 10 },
+    phys: [
 
-        // --- 3. CIVILIZATION ERA (SAPIENT to DIGITAL) ---
-        { id: 'pc1', name: "Stone Tools", cost: 1e10, addClick: 50000, era: 11 },
-        { id: 'pc2', name: "Agricultural Surplus", cost: 1e11, r: 5e7, era: 12 },
-        { id: 'pc3', name: "Steam Engine", cost: 2.5e12, r: 4e8, era: 13 },
-        { id: 'pc4', name: "Silicon Integration", cost: 1e13, r: 2e9, era: 14 },
+        // --- 1. MICRO ERA (VOID to MOLECULAR) ---
 
-        // --- 4. COSMIC ERA (CYBORG to SUPREME) ---
-        { id: 'pd1', name: "Carbon Nano-Weave", cost: 5e14, r: 5e10, era: 15 },
-        { id: 'pd2', name: "Quantum Entanglement", cost: 1e15, addClick: 1e9, era: 16 },
-        { id: 'pd3', name: "Dyson Ring", cost: 1e17, r: 8e11, era: 18 },
-        { id: 'pd4', name: "Singularity Engine", cost: 1e20, r: 1e14, era: 21 },
-        { id: 'pd5', name: "Reality Anchor", cost: 1e23, r: 5e16, era: 23 }
-    ],
-    dna: [
-        { id: 'da1', name: "Membrane Logic", cost: 50000, r: 50, era: 5, currency: 'atp' },
-        { id: 'da2', name: "RNA Transcription", cost: 500, r: 120, era: 6 },
-        { id: 'da3', name: "Symbiosis", cost: 2500, m: 1.5, era: 7 },
-        { id: 'da4', name: "Predation Tax", cost: 15000, m: 2.2, era: 9 },
-        { id: 'dc1', name: "Abstract Thought", cost: 100000, r: 5000, era: 11 },
-        { id: 'dc2', name: "Collective Myth", cost: 1e6, m: 3.0, era: 12 },
-        { id: 'dc3', name: "Digital Consciousness", cost: 5e7, r: 250000, era: 14 },
-        { id: 'dd1', name: "Matrioshka Brain", cost: 1e9, r: 1e6, era: 17 },
-        { id: 'dd2', name: "Entropy Reversal", cost: 1e11, m: 5.0, era: 19 },
-        { id: 'dd3', name: "Chrono-Manipulation", cost: 1e14, r: 5e9, era: 22 },
-        { id: 'dd4', name: "Multiversal Logic", cost: 1e16, m: 10.0, era: 24 }
-    ]
+        { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, era: 0 },
+
+        { id: 'pa1', name: "Neutrino Pulse", cost: 150, r: 12, era: 1 },
+
+        { id: 'pa2', name: "Electron Shell", cost: 1200, r: 80, era: 2 },
+
+        { id: 'pa3', name: "Covalent Bond", cost: 8000, r: 450, era: 3 },
+
+        { id: 'pa4', name: "Crystal Lattice", cost: 50000, r: 2200, era: 4 },
+
+
+        // --- 2. BIOLOGICAL ERA (GENETIC to LAND) ---
+
+        { id: 'pb1', name: "Mitochondria", cost: 100000, r: 8000, era: 6 },
+
+        { id: 'pb2', name: "Neural Bundles", cost: 1e6, r: 45000, era: 8 },
+
+        { id: 'pb3', name: "Calcified Skeleton", cost: 2.5e7, r: 180000, era: 9 },
+
+        { id: 'pb4', name: "Lung Adaptation", cost: 5e8, r: 900000, era: 10 },
+
+
+        // --- 3. CIVILIZATION ERA (SAPIENT to DIGITAL) ---
+
+        { id: 'pc1', name: "Stone Tools", cost: 1e10, addClick: 50000, era: 11 },
+
+        { id: 'pc2', name: "Agricultural Surplus", cost: 1e11, r: 5e7, era: 12 },
+
+        { id: 'pc3', name: "Steam Engine", cost: 2.5e12, r: 4e8, era: 13 },
+
+        { id: 'pc4', name: "Silicon Integration", cost: 1e13, r: 2e9, era: 14 },
+
+
+        // --- 4. COSMIC ERA (CYBORG to SUPREME) ---
+
+        { id: 'pd1', name: "Carbon Nano-Weave", cost: 5e14, r: 5e10, era: 15 },
+
+        { id: 'pd2', name: "Quantum Entanglement", cost: 1e15, addClick: 1e9, era: 16 },
+
+        { id: 'pd3', name: "Dyson Ring", cost: 1e17, r: 8e11, era: 18 },
+
+        { id: 'pd4', name: "Singularity Engine", cost: 1e20, r: 1e14, era: 21 },
+
+        { id: 'pd5', name: "Reality Anchor", cost: 1e23, r: 5e16, era: 23 }
+
+    ],
+
+    dna: [
+
+        { id: 'da1', name: "Membrane Logic", cost: 50000, r: 50, era: 5, currency: 'atp' },
+
+        { id: 'da2', name: "RNA Transcription", cost: 500, r: 120, era: 6 },
+
+        { id: 'da3', name: "Symbiosis", cost: 2500, m: 1.5, era: 7 },
+
+        { id: 'da4', name: "Predation Tax", cost: 15000, m: 2.2, era: 9 },
+
+        { id: 'dc1', name: "Abstract Thought", cost: 100000, r: 5000, era: 11 },
+
+        { id: 'dc2', name: "Collective Myth", cost: 1e6, m: 3.0, era: 12 },
+
+        { id: 'dc3', name: "Digital Consciousness", cost: 5e7, r: 250000, era: 14 },
+
+        { id: 'dd1', name: "Matrioshka Brain", cost: 1e9, r: 1e6, era: 17 },
+
+        { id: 'dd2', name: "Entropy Reversal", cost: 1e11, m: 5.0, era: 19 },
+
+        { id: 'dd3', name: "Chrono-Manipulation", cost: 1e14, r: 5e9, era: 22 },
+
+        { id: 'dd4', name: "Multiversal Logic", cost: 1e16, m: 10.0, era: 24 }
+
+    ]
+
 };
 
-function initGame() {
-    // 1. Load data
-    const saved = localStorage.getItem(STORAGE_KEY);
-    state = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(INITIAL_STATE));
-    applyOfflineEarnings();
-    checkDyn(); 
-    renderUpgrades(); 
-    updateUI(); 
-    animate();
-    startMainLoop();
+
+
+
+    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
+
+    let lastOfflineTime = Date.now();
+
+
+    function transmute() {
+
+        if (state.atp >= 100000) {
+
+            const amount = state.atp * 0.2;
+
+            state.atp -= amount; 
+
+            state.dna += (amount / 400); 
+
+            updateUI();
+
+        }
+
+    }
+
+
+    function handleClick() {
+
+    const now = Date.now(); 
+
+    state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
+
+    state.lastClick = now; 
+
+    
+
+    const b = Math.pow(2, state.uni - 1);
+
+    const gain = state.click * state.multi * state.combo * b;
+
+    state.atp += gain; 
+
+    state.total += gain; 
+
+    state.clickSpinVelocity = 35;
+
+
+    const r = document.createElement('div');
+
+    r.className = 'ripple';
+
+    
+
+    // Positioning logic (relative to the 260px container)
+
+    r.style.setProperty('--ripple-x', '130px');
+
+    r.style.setProperty('--ripple-y', '130px');
+
+    r.style.setProperty('--ripple-size', '400px');
+
+
+    // COLOR LOGIC FIX:
+
+    // Match state.path ('predatory' or 'social') to your CSS variables ('pred' or 'soc')
+
+    let pathKey = state.path === 'predatory' ? 'pred' : 'soc';
+
+    let baseColor = state.path 
+
+        ? getComputedStyle(document.documentElement).getPropertyValue(`--path-${pathKey}`).trim()
+
+        : getComputedStyle(document.documentElement).getPropertyValue(`--atp-color`).trim();
+
+
+    // Apply the color with transparency for the ripple effect
+
+    r.style.background = `radial-gradient(circle, ${baseColor} 0%, transparent 70%)`;
+
+    
+
+    document.getElementById('specimen-container').appendChild(r);
+
+    setTimeout(() => r.remove(), 800);
+
+    
+
+    updateUI();
+
 }
-    
-
-let lastOfflineTime = Date.now();
 
 
-    function confirmTotalReset() {
-        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
-            performTotalReset();
-        }
-    }
 
-    function performTotalReset() {
-        // Remove saved data
-        localStorage.removeItem(STORAGE_KEY);
-        
-        // Remove any lingering Big Crunch button
-        const oldBtn = document.getElementById('rebirth-btn');
-        if (oldBtn) oldBtn.remove();
-        
-        // Full white-out transition
-        document.getElementById('white-out').style.opacity = 1;
-        
-        setTimeout(() => {
-            // Reset state completely
-            state = JSON.parse(JSON.stringify(INITIAL_STATE));
-            
-            // Re-initialize everything
-            renderUpgrades();
-            updateUI();
-            document.getElementById('white-out').style.opacity = 0;
-            
-            alert("Total reset complete.\nWelcome back to the Void. ●");
-        }, 1000);
-    function transmute() {
-        if (state.atp >= 100000) {
-            const amount = state.atp * 0.2;
-            state.atp -= amount; 
-            state.dna += (amount / 400); 
-            updateUI();
-        }
-    }
+    function spawnFloaty(el, text, color) {
 
-    function handleClick() {
-    const now = Date.now(); 
-    state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
-    state.lastClick = now; 
-    
-    const b = Math.pow(2, state.uni - 1);
-    const gain = state.click * state.multi * state.combo * b;
-    state.atp += gain; 
-    state.total += gain; 
-    state.clickSpinVelocity = 35;
+    const rect = el.getBoundingClientRect();
 
-    const r = document.createElement('div');
-    r.className = 'ripple';
-    
-    // Positioning logic (relative to the 260px container)
-    r.style.setProperty('--ripple-x', '130px');
-    r.style.setProperty('--ripple-y', '130px');
-    r.style.setProperty('--ripple-size', '400px');
+    const floaty = document.createElement('div');
 
-    // COLOR LOGIC FIX:
-    // Match state.path ('predatory' or 'social') to your CSS variables ('pred' or 'soc')
-    let pathKey = state.path === 'predatory' ? 'pred' : 'soc';
-    let baseColor = state.path 
-        ? getComputedStyle(document.documentElement).getPropertyValue(`--path-${pathKey}`).trim()
-        : getComputedStyle(document.documentElement).getPropertyValue(`--atp-color`).trim();
+    floaty.className = 'floaty-text';
 
-    // Apply the color with transparency for the ripple effect
-    r.style.background = `radial-gradient(circle, ${baseColor} 0%, transparent 70%)`;
-    
-    document.getElementById('specimen-container').appendChild(r);
-    setTimeout(() => r.remove(), 800);
-    
-    updateUI();
+    floaty.innerText = text;
+
+    floaty.style.color = color || 'var(--atp-color)';
+
+    floaty.style.left = `${rect.left + rect.width / 2}px`;
+
+    floaty.style.top = `${rect.top}px`;
+
+    document.body.appendChild(floaty);
+
+    setTimeout(() => floaty.remove(), 800);
+
 }
 
-
-    function spawnFloaty(el, text, color) {
-    const rect = el.getBoundingClientRect();
-    const floaty = document.createElement('div');
-    floaty.className = 'floaty-text';
-    floaty.innerText = text;
-    floaty.style.color = color || 'var(--atp-color)';
-    floaty.style.left = `${rect.left + rect.width / 2}px`;
-    floaty.style.top = `${rect.top}px`;
-    document.body.appendChild(floaty);
-    setTimeout(() => floaty.remove(), 800);
-}
 
 function buy(type, i) {
-    const u = state.upgrades[type][i];
-    const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
-    
-    if (state[cur] >= u.cost) {
-        state[cur] -= u.cost;
-        u.count++;
 
-        // Define the gain text before rendering
-        const boost = u.r ? `+${formatNum(u.r)}/s` : 
-                      u.m ? `x${u.m} Power` : 
-                      u.addClick ? `+${formatNum(u.addClick)} Click` : 'UPGRADED';
-        
-        const color = type === 'phys' ? 'var(--atp-color)' : 'var(--dna-color)';
+    const u = state.upgrades[type][i];
 
-        // Process stats
-        if (u.r) {
-            if (type === 'phys') state.atpRate += u.r;
-            else state.dnaRate += u.r;
-        }
-        if (u.m) state.multi *= u.m;
-        if (u.addClick) state.click += u.addClick;
-        
-        u.cost = Math.floor(u.cost * 1.6);
+    const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
 
-        // Update DOM
-        renderUpgrades();
-        updateUI();
+    
 
-        // Trigger Visuals
-        const card = document.getElementById(`card-${u.id}`);
-        const btn = document.getElementById(`btn-${u.id}`);
-        if (card && btn) {
-            // Restart "Pop" animation
-            card.classList.remove('upgrade-purchased');
-            void card.offsetWidth; // Force Reflow
-            card.classList.add('upgrade-purchased');
-            
-            // Spawn floaty gain text
-            spawnFloaty(btn, boost, color);
-        }
-    }
+    if (state[cur] >= u.cost) {
+
+        state[cur] -= u.cost;
+
+        u.count++;
+
+
+        // Define the gain text before rendering
+
+        const boost = u.r ? `+${formatNum(u.r)}/s` : 
+
+                      u.m ? `x${u.m} Power` : 
+
+                      u.addClick ? `+${formatNum(u.addClick)} Click` : 'UPGRADED';
+
+        
+
+        const color = type === 'phys' ? 'var(--atp-color)' : 'var(--dna-color)';
+
+
+        // Process stats
+
+        if (u.r) {
+
+            if (type === 'phys') state.atpRate += u.r;
+
+            else state.dnaRate += u.r;
+
+        }
+
+        if (u.m) state.multi *= u.m;
+
+        if (u.addClick) state.click += u.addClick;
+
+        
+
+        u.cost = Math.floor(u.cost * 1.6);
+
+
+        // Update DOM
+
+        renderUpgrades();
+
+        updateUI();
+
+
+        // Trigger Visuals
+
+        const card = document.getElementById(`card-${u.id}`);
+
+        const btn = document.getElementById(`btn-${u.id}`);
+
+        if (card && btn) {
+
+            // Restart "Pop" animation
+
+            card.classList.remove('upgrade-purchased');
+
+            void card.offsetWidth; // Force Reflow
+
+            card.classList.add('upgrade-purchased');
+
+            
+
+            // Spawn floaty gain text
+
+            spawnFloaty(btn, boost, color);
+
+        }
+
+    }
+
 }
 
 
 
 
-    function applyOfflineEarnings() {
-    const now = Date.now();
-    const lastTick = state.lastTick || now; 
-    const elapsedSec = Math.floor((now - lastTick) / 1000);
 
-    // Only process if away for more than 10 seconds
-    if (elapsedSec > 10) {
-        const b = Math.pow(2, state.uni - 1);
-        const atpGain = (state.atpRate * state.multi * b) * elapsedSec;
-        const dnaGain = (state.dnaRate * b) * elapsedSec;
+    function applyOfflineEarnings() {
 
-        if (atpGain > 0 || dnaGain > 0) {
-            state.atp += atpGain;
-            state.dna += dnaGain;
-            state.total += atpGain;
-            
-            // We alert the user after a tiny delay so the UI is visible
-            setTimeout(() => {
-                alert(`THE UNIVERSE EXPANDED\n\nAway for: ${formatTime(elapsedSec)}\n+ ${formatNum(atpGain)} Potential\n+ ${formatNum(dnaGain)} Structure`);
-            }, 500);
-        }
-    }
-    // Set the tick to NOW so updateUI doesn't think we just started
-    state.lastTick = now;
-}
+        const now = Date.now();
 
-    function updateUI() {
-        const b = Math.pow(2, state.uni - 1);
-        document.getElementById('atp-display').innerText = formatNum(state.atp);
-        document.getElementById('dna-display').innerText = formatNum(state.dna);
-        document.getElementById('atp-ps').innerText = `+${formatNum(state.atpRate * state.multi * b)}/s`;
-        document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b)}/s`;
-        document.getElementById('uni-val').innerText = state.uni;
-        document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
+        const elapsedSec = Math.floor((now - lastOfflineTime) / 1000);
 
-        const s = stages[state.stage], spec = document.getElementById('specimen');
-        spec.innerText = s.emoji; 
-        spec.className = state.stage === 0 ? 'singularity' : '';
-        document.getElementById('stage-name').innerText = s.name;
-        document.getElementById('stage-desc').innerText = s.desc || "";
-        document.getElementById('era-val').innerText = s.era;
-        
-        const prev = state.stage > 0 ? stages[state.stage-1].goal : 0;
-        document.getElementById('progress-fill').style.width = Math.min(((state.total-prev)/(s.goal-prev))*100, 100) + "%";
-        document.getElementById('progress-stats').innerText = `${formatNum(state.total - prev)} / ${formatNum(s.goal - prev)}`;
+        if (elapsedSec > 0) {
 
-        let opacity = state.stage === 0 ? Math.max(0.05, state.total / 500) : 1;
-        document.querySelectorAll('.reveal-target').forEach(el => { 
-            el.style.opacity = opacity; 
-            el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; 
-        });
+            const b = Math.pow(2, state.uni - 1);
 
-        // Safer button disabling using current state
-        document.querySelectorAll('.upgrade-card button').forEach(btn => {
-            const onclick = btn.getAttribute('onclick');
-            const match = onclick.match(/buy\('(\w+)', (\d+)\)/);
-            if (match) {
-                const type = match[1];
-                const index = parseInt(match[2]);
-                const u = state.upgrades[type][index];
-                if (u) {
-                    const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
-                    btn.disabled = state[currency] < u.cost;
-                }
-            }
-        });
+            const gainPerSec = state.atpRate * state.multi * b;
 
-        document.getElementById('transmute-btn').disabled = state.atp < 100000;
-        document.getElementById('transmute-btn').style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
-        if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
+            const earned = gainPerSec * elapsedSec;
 
-        const h = document.getElementById('resonance-halo'); 
-        h.className = state.combo > 1.2 ? 'active' : '';
-        document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
-        if (state.path) {
-            const color = `var(--path-${state.path})`;
-            document.getElementById('specimen-container').style.borderColor = color;
-            h.style.borderColor = color;
-        }
+            state.atp += earned;
 
-        // Stage progression logic
-        if (state.total >= s.goal) {
-            if (state.stage < stages.length - 1) {
-                document.getElementById('white-out').style.opacity = 0.5; 
-                setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
-                if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
-                state.stage++; 
-                if(state.stage === 4 && !state.path) toggleModal('path-modal');
-                checkDyn(); 
-                renderUpgrades();
-            }
-        }
+            state.dna += state.dnaRate * b * elapsedSec;
 
-        // --- Big Crunch Button Logic (runs every update) ---
-        const existingBtn = document.getElementById('rebirth-btn');
-        const isFinalStage = state.stage >= stages.length - 1 && state.total >= stages[stages.length - 1].goal;
+            state.total += earned;
 
-        if (isFinalStage && !existingBtn) {
-            const btn = document.createElement('button');
-            btn.id = 'rebirth-btn';
-            btn.innerText = "INITIATE BIG CRUNCH";
-            btn.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; background:white; color:black; padding:20px 40px; font-size:1.5em; cursor:pointer; border-radius:16px; font-family:'Orbitron';";
-            btn.onclick = bigCrunch;
-            document.body.appendChild(btn);
-        } else if (!isFinalStage && existingBtn) {
-            existingBtn.remove();
-        }
+        }
 
-            // bottom of updateUI()
-    state.lastTick = Date.now();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-});
-    
-// Separate the loop into a function
-function startMainLoop() {
-    setInterval(() => {
-        const b = Math.pow(2, state.uni - 1);
-        state.atp += (state.atpRate * state.multi * b) / 10;
-        state.dna += (state.dnaRate * b) / 10;
-        state.total += (state.atpRate * state.multi * b) / 10;
-        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
-        updateUI();
-    }, 100);
-}
-  
+        lastOfflineTime = now;
 
-    // Main game loop
-    setInterval(() => {
-        const b = Math.pow(2, state.uni - 1);
-        state.atp += (state.atpRate * state.multi * b) / 10;
-        state.dna += (state.dnaRate * b) / 10;
-        state.total += (state.atpRate * state.multi * b) / 10;
-        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
-        updateUI();
-    }, 100);
+    }
 
-    function checkDyn() {
-        ['phys', 'dna'].forEach(type => { 
-            lib[type].forEach(u => { 
-                if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) { 
-                    state.upgrades[type].push({...u, count: 0, cost: u.cost}); 
-                } 
-            }); 
-        });
-    }
 
-    function animate() {
-        const container = document.getElementById('specimen-container');
-        let speed = 0.2 + ((state.combo - 1) * 0.3);
-        if (state.clickSpinVelocity > 0.1) { 
-            speed += state.clickSpinVelocity; 
-            state.clickSpinVelocity *= 0.92; 
-        }
-        state.currentRotation = (state.currentRotation + speed) % 360;
-        container.style.transform = `rotate(${state.currentRotation}deg)`;
-        requestAnimationFrame(animate);
-    }
+    function updateUI() {
+
+        const b = Math.pow(2, state.uni - 1);
+
+        document.getElementById('atp-display').innerText = formatNum(state.atp);
+
+        document.getElementById('dna-display').innerText = formatNum(state.dna);
+
+        document.getElementById('atp-ps').innerText = `+${formatNum(state.atpRate * state.multi * b)}/s`;
+
+        document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b)}/s`;
+
+        document.getElementById('uni-val').innerText = state.uni;
+
+        document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
+
+
+        const s = stages[state.stage], spec = document.getElementById('specimen');
+
+        spec.innerText = s.emoji; 
+
+        spec.className = state.stage === 0 ? 'singularity' : '';
+
+        document.getElementById('stage-name').innerText = s.name;
+
+        document.getElementById('stage-desc').innerText = s.desc || "";
+
+        document.getElementById('era-val').innerText = s.era;
+
+        
+
+        const prev = state.stage > 0 ? stages[state.stage-1].goal : 0;
+
+        document.getElementById('progress-fill').style.width = Math.min(((state.total-prev)/(s.goal-prev))*100, 100) + "%";
+
+        document.getElementById('progress-stats').innerText = `${formatNum(state.total - prev)} / ${formatNum(s.goal - prev)}`;
+
+
+        let opacity = state.stage === 0 ? Math.max(0.05, state.total / 500) : 1;
+
+        document.querySelectorAll('.reveal-target').forEach(el => { 
+
+            el.style.opacity = opacity; 
+
+            el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; 
+
+        });
+
+
+        // Safer button disabling using current state
+
+        document.querySelectorAll('.upgrade-card button').forEach(btn => {
+
+            const onclick = btn.getAttribute('onclick');
+
+            const match = onclick.match(/buy\('(\w+)', (\d+)\)/);
+
+            if (match) {
+
+                const type = match[1];
+
+                const index = parseInt(match[2]);
+
+                const u = state.upgrades[type][index];
+
+                if (u) {
+
+                    const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
+
+                    btn.disabled = state[currency] < u.cost;
+
+                }
+
+            }
+
+        });
+
+
+        document.getElementById('transmute-btn').disabled = state.atp < 100000;
+
+        document.getElementById('transmute-btn').style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
+
+        if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
+
+
+        const h = document.getElementById('resonance-halo'); 
+
+        h.className = state.combo > 1.2 ? 'active' : '';
+
+        document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
+
+        if (state.path) {
+
+            const color = `var(--path-${state.path})`;
+
+            document.getElementById('specimen-container').style.borderColor = color;
+
+            h.style.borderColor = color;
+
+        }
+
+
+        // Stage progression logic
+
+        if (state.total >= s.goal) {
+
+            if (state.stage < stages.length - 1) {
+
+                document.getElementById('white-out').style.opacity = 0.5; 
+
+                setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
+
+                if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
+
+                state.stage++; 
+
+                if(state.stage === 4 && !state.path) toggleModal('path-modal');
+
+                checkDyn(); 
+
+                renderUpgrades();
+
+            }
+
+        }
+
+
+        // --- Big Crunch Button Logic (runs every update) ---
+
+        const existingBtn = document.getElementById('rebirth-btn');
+
+        const isFinalStage = state.stage >= stages.length - 1 && state.total >= stages[stages.length - 1].goal;
+
+
+        if (isFinalStage && !existingBtn) {
+
+            const btn = document.createElement('button');
+
+            btn.id = 'rebirth-btn';
+
+            btn.innerText = "INITIATE BIG CRUNCH";
+
+            btn.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; background:white; color:black; padding:20px 40px; font-size:1.5em; cursor:pointer; border-radius:16px; font-family:'Orbitron';";
+
+            btn.onclick = bigCrunch;
+
+            document.body.appendChild(btn);
+
+        } else if (!isFinalStage && existingBtn) {
+
+            existingBtn.remove();
+
+        }
+
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    }  // ← This correctly closes the updateUI() function
+
+
+
+    // Main game loop
+
+    setInterval(() => {
+
+        const b = Math.pow(2, state.uni - 1);
+
+        state.atp += (state.atpRate * state.multi * b) / 10;
+
+        state.dna += (state.dnaRate * b) / 10;
+
+        state.total += (state.atpRate * state.multi * b) / 10;
+
+        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
+
+        updateUI();
+
+    }, 100);
+
+
+    function checkDyn() {
+
+        ['phys', 'dna'].forEach(type => { 
+
+            lib[type].forEach(u => { 
+
+                if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) { 
+
+                    state.upgrades[type].push({...u, count: 0, cost: u.cost}); 
+
+                } 
+
+            }); 
+
+        });
+
+    }
+
+
+    function animate() {
+
+        const container = document.getElementById('specimen-container');
+
+        let speed = 0.2 + ((state.combo - 1) * 0.3);
+
+        if (state.clickSpinVelocity > 0.1) { 
+
+            speed += state.clickSpinVelocity; 
+
+            state.clickSpinVelocity *= 0.92; 
+
+        }
+
+        state.currentRotation = (state.currentRotation + speed) % 360;
+
+        container.style.transform = `rotate(${state.currentRotation}deg)`;
+
+        requestAnimationFrame(animate);
+
+    }
+
 
 
 function formatNum(n) {
-    if(n < 1000) return Math.floor(n).toLocaleString();
-    const units = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
-    const e = Math.floor(Math.log10(n) / 3);
-    if (e > units.length) return n.toExponential(2); // Fallback for massive numbers
-    return (n / Math.pow(10, e * 3)).toFixed(1) + units[e-1];
+
+    if(n < 1000) return Math.floor(n).toLocaleString();
+
+    const units = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+
+    const e = Math.floor(Math.log10(n) / 3);
+
+    if (e > units.length) return n.toExponential(2); // Fallback for massive numbers
+
+    return (n / Math.pow(10, e * 3)).toFixed(1) + units[e-1];
+
 }
+
 
 function bigCrunch() {
-    // 1. Save the Archive and Universe level
-    const currentUni = state.uni + 1;
-    const currentArchive = [...state.archive];
-    const oldBtn = document.getElementById('rebirth-btn');
-    if (oldBtn) oldBtn.remove();
-    // 2. Reset the state to Initial, but carry over the prestige bonuses
-    state = JSON.parse(JSON.stringify(INITIAL_STATE));
-    state.uni = currentUni;
-    state.archive = currentArchive;
-    
-    // 3. Clear UI and re-initialize
-    document.getElementById('white-out').style.opacity = 1;
-    setTimeout(() => {
-        document.getElementById('white-out').style.opacity = 0;
-        renderUpgrades();
-        updateUI();
-        // Optional: Show a message about the new multiplier
-        alert(`Universe ${currentUni} created. Potential gain increased by ${Math.pow(2, currentUni - 1)}x!`);
-    }, 1000);
-}
-    
 
-    function toggleModal(id) { 
-        const m = document.getElementById(id); 
-        m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; 
-        if(id === 'archive-modal') renderArchive(); 
-    }
-    
-    function renderUpgrades() { 
-    const r = (containerId, type) => { 
-        const container = document.getElementById(containerId);
-        // Filter upgrades based on current era/stage
-        const filteredUpgrades = state.upgrades[type].filter(u => state.stage >= u.era);
-        
-        container.innerHTML = filteredUpgrades.map((u) => {
-            // We use originalIndex so the buy() function hits the correct array slot
-            const originalIndex = state.upgrades[type].indexOf(u);
-            const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
-            
-            // Generate the boost text (e.g., "+5/s" or "x2 Mult")
-            const boost = u.r ? `+${formatNum(u.r)}/s` : 
-                          u.m ? `x${u.m} POWER` : 
-                          u.addClick ? `+${formatNum(u.addClick)} CLICK` : 'EVOLVE';
+    // 1. Save the Archive and Universe level
 
-            return `
-                <div class="upgrade-card" id="card-${u.id}">
-                    <div style="flex-grow: 1;">
-                        <b style="font-size: 0.85em; letter-spacing: 1px; color: var(--text-primary);">
-                            ${u.name.toUpperCase()}
-                        </b><br>
-                        <small style="color: var(--atp-color); font-family: 'Orbitron'; font-size: 0.65em; opacity: 0.8;">
-                            ${boost}
-                        </small>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 0.6em; opacity: 0.4; margin-bottom: 4px; font-family: 'Orbitron';">
-                            LVL ${u.count || 0}
-                        </div>
-                        <button 
-                            id="btn-${u.id}"
-                            onclick="buy('${type}', ${originalIndex})" 
-                            style="min-width: 80px;"
-                            ${state[currency] < u.cost ? 'disabled' : ''}>
-                            ${formatNum(u.cost)}
-                        </button>
-                    </div>
-                </div>`;
-        }).join(''); 
-    }; 
+    const currentUni = state.uni + 1;
 
-    r('phys-upgrades', 'phys'); 
-    r('dna-upgrades', 'dna'); 
+    const currentArchive = [...state.archive];
+
+    const oldBtn = document.getElementById('rebirth-btn');
+
+    if (oldBtn) oldBtn.remove();
+
+    // 2. Reset the state to Initial, but carry over the prestige bonuses
+
+    state = JSON.parse(JSON.stringify(INITIAL_STATE));
+
+    state.uni = currentUni;
+
+    state.archive = currentArchive;
+
+    
+
+    // 3. Clear UI and re-initialize
+
+    document.getElementById('white-out').style.opacity = 1;
+
+    setTimeout(() => {
+
+        document.getElementById('white-out').style.opacity = 0;
+
+        renderUpgrades();
+
+        updateUI();
+
+        // Optional: Show a message about the new multiplier
+
+        alert(`Universe ${currentUni} created. Potential gain increased by ${Math.pow(2, currentUni - 1)}x!`);
+
+    }, 1000);
+
 }
 
-    
-    function renderArchive() { 
-    document.getElementById('specimen-history').innerHTML = 
-        state.archive.map(i => 
-            `<div class="history-card" onclick="showScience(${i})" style="cursor: pointer; transition: background 0.2s;">
-                <b>${stages[i].emoji} ${stages[i].name}</b>
-            </div>`
-        ).join(''); 
+    
+
+
+    function toggleModal(id) { 
+
+        const m = document.getElementById(id); 
+
+        m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; 
+
+        if(id === 'archive-modal') renderArchive(); 
+
+    }
+
+    
+
+    function renderUpgrades() { 
+
+    const r = (containerId, type) => { 
+
+        const container = document.getElementById(containerId);
+
+        const filteredUpgrades = state.upgrades[type].filter(u => state.stage >= u.era);
+
+        
+
+        container.innerHTML = filteredUpgrades.map((u) => {
+
+            const originalIndex = state.upgrades[type].indexOf(u);
+
+            const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
+
+            
+
+            const boost = u.r ? `+${formatNum(u.r)}/s` : 
+
+                          u.m ? `x${u.m} Power` : 
+
+                          u.addClick ? `+${formatNum(u.addClick)} Click` : '';
+
+
+            return `
+
+                <div class="upgrade-card" id="card-${u.id}">
+
+                    <div style="flex-grow: 1;">
+
+                        <b style="font-size: 0.85em; letter-spacing: 1px;">${u.name.toUpperCase()}</b><br>
+
+                        <small style="color: var(--atp-color); font-family: 'Orbitron'; font-size: 0.65em; opacity: 0.8;">
+
+                            ${boost}
+
+                        </small>
+
+                    </div>
+
+                    <div style="text-align: right;">
+
+                        <div style="font-size: 0.6em; opacity: 0.5; margin-bottom: 4px;">LVL ${u.count}</div>
+
+                        <button 
+
+                            id="btn-${u.id}"
+
+                            onclick="buy('${type}', ${originalIndex})" 
+
+                            style="min-width: 75px;"
+
+                            ${state[currency] < u.cost ? 'disabled' : ''}>
+
+                            ${formatNum(u.cost)}
+
+                        </button>
+
+                    </div>
+
+                </div>`;
+
+        }).join(''); 
+
+    }; 
+
+
+    r('phys-upgrades', 'phys'); 
+
+    r('dna-upgrades', 'dna'); 
+
 }
 
-    
-    function selectPath(p) { 
-        state.path = p; 
-        toggleModal('path-modal'); 
-        updateUI(); 
-    }
+
+    
+
+    function renderArchive() { 
+
+    document.getElementById('specimen-history').innerHTML = 
+
+        state.archive.map(i => 
+
+            `<div class="history-card" onclick="showScience(${i})" style="cursor: pointer; transition: background 0.2s;">
+
+                <b>${stages[i].emoji} ${stages[i].name}</b>
+
+            </div>`
+
+        ).join(''); 
+
+}
+
+
+    
+
+    function selectPath(p) { 
+
+        state.path = p; 
+
+        toggleModal('path-modal'); 
+
+        updateUI(); 
+
+    }
+
 function showScience(i) {
-    const s = stages[i];
-    document.getElementById('science-title').innerText = `${s.emoji} ${s.name}`;
-    document.getElementById('science-desc').innerText = s.scienceDesc;
-    toggleModal('science-modal');
+
+    const s = stages[i];
+
+    document.getElementById('science-title').innerText = `${s.emoji} ${s.name}`;
+
+    document.getElementById('science-desc').innerText = s.scienceDesc;
+
+    toggleModal('science-modal');
+
 }
+
 document.addEventListener('click', function(e) {
-    let btn = e.target.closest('button');
-    if (btn && !btn.disabled) {
-        const rect = btn.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height) * 2.8; // Even bigger for visibility
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
 
-        const ripple = document.createElement('div');
-        ripple.className = 'ripple';
-        ripple.style.setProperty('--ripple-x', x + 'px');
-        ripple.style.setProperty('--ripple-y', y + 'px');
-        ripple.style.setProperty('--ripple-size', size + 'px');
+    let btn = e.target.closest('button');
 
-        // Set ripple color from theme/path
-        let color = '#00ff88'; // default ATP green
-        if (btn.id === 'rebirth-btn') {
-            color = '#ffffff';
-        } else if (state?.path) {
-            color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${state.path}`).trim() || color;
-        }
-        ripple.style.setProperty('--ripple-color', color);
+    if (btn && !btn.disabled) {
 
-        btn.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 800);
-    }
+        const rect = btn.getBoundingClientRect();
+
+        const size = Math.max(rect.width, rect.height) * 2.8; // Even bigger for visibility
+
+        const x = e.clientX - rect.left;
+
+        const y = e.clientY - rect.top;
+
+
+        const ripple = document.createElement('div');
+
+        ripple.className = 'ripple';
+
+        ripple.style.setProperty('--ripple-x', x + 'px');
+
+        ripple.style.setProperty('--ripple-y', y + 'px');
+
+        ripple.style.setProperty('--ripple-size', size + 'px');
+
+
+        // Set ripple color from theme/path
+
+        let color = '#00ff88'; // default ATP green
+
+        if (btn.id === 'rebirth-btn') {
+
+            color = '#ffffff';
+
+        } else if (state?.path) {
+
+            color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${state.path}`).trim() || color;
+
+        }
+
+        ripple.style.setProperty('--ripple-color', color);
+
+
+        btn.appendChild(ripple);
+
+        setTimeout(() => ripple.remove(), 800);
+
+    }
+
 }, true);
- // Initialize
-    initGame();   
-    
 
-    
+ // Initialize
+
+    applyOfflineEarnings();
+
+    checkDyn(); 
+
+    renderUpgrades(); 
+
+    updateUI(); 
+
+    animate();
+
 </script>
-</body>
-</html>
 
+</body>
+
+</html>
