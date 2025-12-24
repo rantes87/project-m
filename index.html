@@ -684,7 +684,7 @@ function buy(type, i) {
     state.lastTick = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
-    }
+    
 // Separate the loop into a function
 function startMainLoop() {
     setInterval(() => {
@@ -865,11 +865,7 @@ document.addEventListener('click', function(e) {
 }, true);
  // Initialize
     initGame();   
-    applyOfflineEarnings();
-    checkDyn(); 
-    renderUpgrades(); 
-    updateUI(); 
-    animate();
+    
 
     
 </script>
