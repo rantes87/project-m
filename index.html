@@ -684,7 +684,7 @@ function buy(type, i) {
     state.lastTick = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
-
+    }
 // Separate the loop into a function
 function startMainLoop() {
     setInterval(() => {
@@ -784,7 +784,7 @@ function bigCrunch() {
                           u.m ? `x${u.m} POWER` : 
                           u.addClick ? `+${formatNum(u.addClick)} CLICK` : 'EVOLVE';
 
-            return 
+            return `
                 <div class="upgrade-card" id="card-${u.id}">
                     <div style="flex-grow: 1;">
                         <b style="font-size: 0.85em; letter-spacing: 1px; color: var(--text-primary);">
@@ -812,9 +812,6 @@ function bigCrunch() {
 
     r('phys-upgrades', 'phys'); 
     r('dna-upgrades', 'dna'); 
-}
-
-        
 }
 
     
@@ -867,12 +864,13 @@ document.addEventListener('click', function(e) {
     }
 }, true);
  // Initialize
+    initGame();   
     applyOfflineEarnings();
     checkDyn(); 
     renderUpgrades(); 
     updateUI(); 
     animate();
-    initGame();
+
     
 </script>
 </body>
