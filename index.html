@@ -112,26 +112,6 @@ button {
     will-change: transform;
 }
 
-/* The "Pop" Animation */
-@keyframes upgrade-flash {
-    0% { 
-        transform: scale(1); 
-        background: rgba(255, 255, 255, 0.4); 
-        box-shadow: 0 0 0px #fff;
-        z-index: 10;
-    }
-    20% { 
-        transform: scale(1.08); /* The Pop */
-        background: rgba(255, 255, 255, 0.2); 
-        box-shadow: 0 0 25px var(--atp-glow);
-    }
-    100% { 
-        transform: scale(1); 
-        background: rgba(255, 255, 255, 0.03); 
-        box-shadow: 0 0 0px transparent;
-        z-index: 1;
-    }
-}
 
 .upgrade-purchased {
     animation: upgrade-flash 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
@@ -615,18 +595,14 @@ function spawnFloaty(el, text, color) {
 
 
 
-
-    function applyOfflineEarnings() {
+function applyOfflineEarnings() {
     const now = Date.now();
-    // Use the lastTick saved in the state, or "now" if it's a brand new game
     const lastTick = state.lastTick || now; 
     const elapsedSec = Math.floor((now - lastTick) / 1000);
 
-    // Only process if the user was gone for more than 10 seconds
+    // Only process if away for more than 10 seconds
     if (elapsedSec > 10) {
         const b = Math.pow(2, state.uni - 1);
-        
-        // Use your rates and multipliers to find the gain per second
         const atpGain = (state.atpRate * state.multi * b) * elapsedSec;
         const dnaGain = (state.dnaRate * b) * elapsedSec;
 
@@ -634,19 +610,19 @@ function spawnFloaty(el, text, color) {
             state.atp += atpGain;
             state.dna += dnaGain;
             state.total += atpGain;
-
-            // Log it to console so you can verify it worked without a popup
-            console.log(`Offline: +${atpGain} ATP, +${dnaGain} DNA over ${elapsedSec}s`);
             
-            // Optional: Use a non-blocking timeout for the alert so the UI can finish loading
+            // Force a save immediately after adding offline income
+            state.lastTick = now;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
             setTimeout(() => {
                 alert(`THE UNIVERSE EXPANDED\n\nAway for: ${formatTime(elapsedSec)}\n+ ${formatNum(atpGain)} Potential\n+ ${formatNum(dnaGain)} Structure`);
-            }, 500);
+            }, 600);
         }
     }
-    // Update the tick so it doesn't double-count
     state.lastTick = now;
 }
+
 
 
 // Helper to make the alert look nice
@@ -934,12 +910,29 @@ document.addEventListener('click', function(e) {
         setTimeout(() => ripple.remove(), 800);
     }
 }, true);
- // Initialize
-    applyOfflineEarnings();
-    checkDyn(); 
-    renderUpgrades(); 
-    updateUI(); 
-    animate();
+// --- REPLACE THE VERY BOTTOM OF YOUR SCRIPT ---
+// Initialize State
+state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
+
+// Run Offline Gains first
+applyOfflineEarnings();
+
+// Then setup UI and Dynamic Upgrades
+checkDyn(); 
+renderUpgrades(); 
+updateUI(); 
+
+// Start Loops
+animate();
+setInterval(() => {
+    const b = Math.pow(2, state.uni - 1);
+    state.atp += (state.atpRate * state.multi * b) / 10;
+    state.dna += (state.dnaRate * b) / 10;
+    state.total += (state.atpRate * state.multi * b) / 10;
+    if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
+    updateUI();
+}, 100);
+
 </script>
 </body>
 </html>
