@@ -671,7 +671,7 @@ function formatTime(s) {
         document.querySelectorAll('.reveal-target').forEach(el => { 
             el.style.opacity = opacity; 
             el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; 
-        });
+        }
 
         // Safer button disabling using current state
         document.querySelectorAll('.upgrade-card button').forEach(btn => {
@@ -686,7 +686,7 @@ function formatTime(s) {
                     btn.disabled = state[currency] < u.cost;
                 }
             }
-        });
+        }
 
         document.getElementById('transmute-btn').disabled = state.atp < 100000;
         document.getElementById('transmute-btn').style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
@@ -761,8 +761,6 @@ function startMainLoop() {
         updateUI();
     }, 100);
 }
-
-    }  // ← This correctly closes the updateUI() function
 
 
     // Main game loop
