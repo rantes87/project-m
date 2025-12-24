@@ -111,12 +111,11 @@ button:active:not(:disabled) {
     filter: brightness(1.3) drop-shadow(0 0 20px currentColor) !important;
 }
 
-/* Updated: Ultra-Smooth Ripple with GPU Acceleration */
+/* Ultra-Smooth Ripple - Now Visible & Themed */
 .ripple {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3); /* Soft fill for visibility */
-    border: 2px solid transparent; /* Remove solid border, use background for smoother look */
+    background: radial-gradient(circle, var(--ripple-color, #00ff88) 0%, transparent 70%);
     pointer-events: none;
     left: var(--ripple-x);
     top: var(--ripple-y);
@@ -130,13 +129,13 @@ button:active:not(:disabled) {
 @keyframes ripple-smooth {
     0% {
         transform: translate(-50%, -50%) scale(0);
-        opacity: 0.6;
+        opacity: 0.8;
     }
     70% {
-        opacity: 0.4;
+        opacity: 0.6;
     }
     100% {
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(-50%, -50%) scale(1.1);
         opacity: 0;
     }
 }
@@ -685,7 +684,7 @@ document.addEventListener('click', function(e) {
     let btn = e.target.closest('button');
     if (btn && !btn.disabled) {
         const rect = btn.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height) * 2.2; // Bigger spread
+        const size = Math.max(rect.width, rect.height) * 2.4;
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
@@ -695,13 +694,16 @@ document.addEventListener('click', function(e) {
         ripple.style.setProperty('--ripple-y', y + 'px');
         ripple.style.setProperty('--ripple-size', size + 'px');
 
-        // Dynamic color - matches button background or path
-        const bg = window.getComputedStyle(btn).backgroundColor;
-        const isTrans = bg.includes('rgba(0, 0, 0, 0)') || bg === 'transparent';
-        const color = isTrans 
-            ? (btn.id === 'rebirth-btn' ? '#ffffff' : (state.path ? `var(--path-${state.path})` : 'var(--atp-color)'))
-            : bg;
-        ripple.style.background = color.replace(')', ', 0.3)').replace('rgb', 'rgba'); // Add transparency
+        // Determine ripple color
+        let color;
+        if (btn.id === 'rebirth-btn') {
+            color = '#ffffff';
+        } else if (state && state.path) {
+            color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${state.path}`).trim();
+        } else {
+            color = getComputedStyle(document.documentElement).getPropertyValue('--atp-color').trim();
+        }
+        ripple.style.setProperty('--ripple-color', color);
 
         btn.appendChild(ripple);
         setTimeout(() => ripple.remove(), 800);
