@@ -501,8 +501,7 @@ const lib = {
 
 
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
-    applyOfflineEarnings();
-    let lastOfflineTime = Date.now();
+    
 
     function transmute() {
         if (state.atp >= 100000) {
