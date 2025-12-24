@@ -642,7 +642,6 @@ function bigCrunch() {
         
         container.innerHTML = filteredUpgrades.map((u) => {
             const originalIndex = state.upgrades[type].indexOf(u);
-            const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
             
             return `
                 <div class="upgrade-card">
@@ -650,37 +649,7 @@ function bigCrunch() {
                         <b>${u.name}</b><br>
                         <small>Lvl ${u.count}</small>
                     </div>
-                    <button 
-                        onclick="buy('${type}', ${originalIndex})">
-                        ${formatNum(u.cost)}
-                    </button>
-                </div>`;
-        }).join(''); 
-    }; 
-    r('phys-upgrades', 'phys'); 
-    r('dna-upgrades', 'dna'); 
-}
-        // We map the original array first to keep the correct index, 
-        // then filter for display, or vice versa. 
-        // The most reliable way is to find the index of the object in the original state.
-        const container = document.getElementById(id);
-        const filteredUpgrades = state.upgrades[type].filter(u => state.stage >= u.era);
-        
-        container.innerHTML = filteredUpgrades.map((u) => {
-            // Find the true index in the original state array so buy() works correctly
-            const originalIndex = state.upgrades[type].indexOf(u);
-            const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
-            
-            return `
-                <div class="upgrade-card">
-                    <div>
-                        <b>${u.name}</b><br>
-                        <small>Lvl ${u.count}</small>
-                    </div>
-                    <button 
-                        data-cost="${u.cost}" 
-                        data-currency="${currency}" 
-                        onclick="buy('${type}', ${originalIndex})">
+                    <button onclick="buy('${type}', ${originalIndex})">
                         ${formatNum(u.cost)}
                     </button>
                 </div>`;
