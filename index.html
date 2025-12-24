@@ -353,7 +353,28 @@ button:active:not(:disabled) {
 </div>
 <script>
     // --- CORE LOGIC ---
-    const STORAGE_KEY = 'universal_master_v9';
+const STORAGE_KEY = 'universal_master_v9';
+let state; // Don't initialize yet!
+
+// Initialization Function
+function initGame() {
+    // 1. Load data
+    const saved = localStorage.getItem(STORAGE_KEY);
+    state = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(INITIAL_STATE));
+
+    // 2. Calculate Offline Gains BEFORE the loop starts
+    applyOfflineEarnings();
+
+    // 3. Setup UI
+    checkDyn(); 
+    renderUpgrades(); 
+    updateUI(); 
+
+    // 4. Start Loops
+    animate();
+    startMainLoop();
+}
+
     function confirmTotalReset() {
         if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
             performTotalReset();
@@ -611,17 +632,16 @@ function applyOfflineEarnings() {
             state.dna += dnaGain;
             state.total += atpGain;
             
-            // Force a save immediately after adding offline income
-            state.lastTick = now;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-
+            // We alert the user after a tiny delay so the UI is visible
             setTimeout(() => {
                 alert(`THE UNIVERSE EXPANDED\n\nAway for: ${formatTime(elapsedSec)}\n+ ${formatNum(atpGain)} Potential\n+ ${formatNum(dnaGain)} Structure`);
-            }, 600);
+            }, 500);
         }
     }
+    // Set the tick to NOW so updateUI doesn't think we just started
     state.lastTick = now;
 }
+
 
 
 
@@ -717,8 +737,36 @@ function formatTime(s) {
 
         
         // Add this line inside the updateUI function, right after the localStorage.setItem
-state.lastTick = Date.now(); 
-localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // bottom of updateUI()
+        // bottom of updateUI()
+    state.lastTick = Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// Separate the loop into a function
+function startMainLoop() {
+    setInterval(() => {
+        const b = Math.pow(2, state.uni - 1);
+        state.atp += (state.atpRate * state.multi * b) / 10;
+        state.dna += (state.dnaRate * b) / 10;
+        state.total += (state.atpRate * state.multi * b) / 10;
+        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
+        updateUI();
+    }, 100);
+}
+
+
+// Separate the loop into a function
+function startMainLoop() {
+    setInterval(() => {
+        const b = Math.pow(2, state.uni - 1);
+        state.atp += (state.atpRate * state.multi * b) / 10;
+        state.dna += (state.dnaRate * b) / 10;
+        state.total += (state.atpRate * state.multi * b) / 10;
+        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
+        updateUI();
+    }, 100);
+}
 
     }  // ← This correctly closes the updateUI() function
 
@@ -932,7 +980,8 @@ setInterval(() => {
     if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
     updateUI();
 }, 100);
-
+initGame();
+    
 </script>
 </body>
 </html>
