@@ -110,6 +110,40 @@ button:active:not(:disabled) {
     transition: transform 0.1s ease, filter 0.1s ease;
     filter: brightness(1.3) drop-shadow(0 0 20px currentColor) !important;
 }
+.upgrade-card button {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+    z-index: 1;
+    overflow: hidden; /* Clips the background fill */
+}
+
+/* The Progress Layer */
+.upgrade-card button::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: var(--progress, 0%);
+    background: currentColor; /* Matches the text color (Green/Purple) */
+    opacity: 0.2;
+    z-index: -1;
+    transition: width 0.3s ease-out;
+}
+
+/* Glow effect when ready */
+.upgrade-card button:not(:disabled) {
+    background: var(--atp-color);
+    color: #000;
+    opacity: 1;
+    filter: none;
+    box-shadow: 0 0 15px var(--atp-glow);
+}
+
+.upgrade-card button:disabled {
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
 
 /* Ultra-Smooth Ripple - Now Visible & Themed */
 /* FINAL Ultra-Smooth & Visible Ripple */
@@ -630,28 +664,46 @@ function bigCrunch() {
     }
     
     function renderUpgrades() { 
-    const r = (id, type) => { 
-        const container = document.getElementById(id);
+    const r = (containerId, type) => { 
+        const container = document.getElementById(containerId);
         const filteredUpgrades = state.upgrades[type].filter(u => state.stage >= u.era);
         
         container.innerHTML = filteredUpgrades.map((u) => {
             const originalIndex = state.upgrades[type].indexOf(u);
+            const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
             
+            // 1. Calculate the boost text dynamically
+            const boost = u.r ? `+${formatNum(u.r)}/s` : 
+                          u.m ? `x${u.m} Mult` : 
+                          u.addClick ? `+${formatNum(u.addClick)} Click` : '';
+
+            // 2. Calculate current affordability for the progress bar
+            const ratio = Math.min(1, state[currency] / u.cost);
+            const progressPercent = ratio * 100;
+
             return `
-                <div class="upgrade-card">
-                    <div>
-                        <b>${u.name}</b><br>
-                        <small>Lvl ${u.count}</small>
+                <div class="upgrade-card" style="position: relative; overflow: hidden;">
+                    <div style="flex-grow: 1; z-index: 2;">
+                        <b style="font-size: 0.85em; letter-spacing: 0.5px;">${u.name.toUpperCase()}</b><br>
+                        <small style="color: var(--text-secondary); font-size: 0.7em;">
+                            ${boost} • <span style="color: var(--atp-color)">Lvl ${u.count}</span>
+                        </small>
                     </div>
-                    <button onclick="buy('${type}', ${originalIndex})">
+                    <button 
+                        id="btn-${u.id}"
+                        onclick="buy('${type}', ${originalIndex})" 
+                        style="--progress: ${progressPercent}%; min-width: 80px;"
+                        ${state[currency] < u.cost ? 'disabled' : ''}>
                         ${formatNum(u.cost)}
                     </button>
                 </div>`;
         }).join(''); 
     }; 
+
     r('phys-upgrades', 'phys'); 
     r('dna-upgrades', 'dna'); 
 }
+
 
     
     function renderArchive() { 
