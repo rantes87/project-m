@@ -696,8 +696,7 @@ function startMainLoop() {
         updateUI();
     }, 100);
 }
-  }  // ← This correctly closes the updateUI() function
-
+  
 
     // Main game loop
     setInterval(() => {
@@ -772,30 +771,37 @@ function bigCrunch() {
     function renderUpgrades() { 
     const r = (containerId, type) => { 
         const container = document.getElementById(containerId);
+        // Filter upgrades based on current era/stage
         const filteredUpgrades = state.upgrades[type].filter(u => state.stage >= u.era);
         
         container.innerHTML = filteredUpgrades.map((u) => {
+            // We use originalIndex so the buy() function hits the correct array slot
             const originalIndex = state.upgrades[type].indexOf(u);
             const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
             
+            // Generate the boost text (e.g., "+5/s" or "x2 Mult")
             const boost = u.r ? `+${formatNum(u.r)}/s` : 
-                          u.m ? `x${u.m} Power` : 
-                          u.addClick ? `+${formatNum(u.addClick)} Click` : '';
+                          u.m ? `x${u.m} POWER` : 
+                          u.addClick ? `+${formatNum(u.addClick)} CLICK` : 'EVOLVE';
 
-            return `
+            return 
                 <div class="upgrade-card" id="card-${u.id}">
                     <div style="flex-grow: 1;">
-                        <b style="font-size: 0.85em; letter-spacing: 1px;">${u.name.toUpperCase()}</b><br>
+                        <b style="font-size: 0.85em; letter-spacing: 1px; color: var(--text-primary);">
+                            ${u.name.toUpperCase()}
+                        </b><br>
                         <small style="color: var(--atp-color); font-family: 'Orbitron'; font-size: 0.65em; opacity: 0.8;">
                             ${boost}
                         </small>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 0.6em; opacity: 0.5; margin-bottom: 4px;">LVL ${u.count}</div>
+                        <div style="font-size: 0.6em; opacity: 0.4; margin-bottom: 4px; font-family: 'Orbitron';">
+                            LVL ${u.count || 0}
+                        </div>
                         <button 
                             id="btn-${u.id}"
                             onclick="buy('${type}', ${originalIndex})" 
-                            style="min-width: 75px;"
+                            style="min-width: 80px;"
                             ${state[currency] < u.cost ? 'disabled' : ''}>
                             ${formatNum(u.cost)}
                         </button>
@@ -806,6 +812,9 @@ function bigCrunch() {
 
     r('phys-upgrades', 'phys'); 
     r('dna-upgrades', 'dna'); 
+}
+
+        
 }
 
     
