@@ -353,66 +353,13 @@ button:active:not(:disabled) {
 </div>
 <script>
     // --- CORE LOGIC ---
-const STORAGE_KEY = 'universal_master_v9';
-let state; // Don't initialize yet!
-
-function initGame() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    state = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(INITIAL_STATE));
-    
-    applyOfflineEarnings(); // Step 1: Calculate gap
-    checkDyn();             // Step 2: Check for new unlocks
-    renderUpgrades();       // Step 3: Draw buttons
-    updateUI();             // Step 4: Show current resources
-    
-    setInterval(gameLoop, 100); // Step 5: Start the heart beat
-}
-
-
-    function confirmTotalReset() {
-        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
-            performTotalReset();
-        }
-    }
-
-    function performTotalReset() {
-        // Remove saved data
-        localStorage.removeItem(STORAGE_KEY);
-        
-        // Remove any lingering Big Crunch button
-        const oldBtn = document.getElementById('rebirth-btn');
-        if (oldBtn) oldBtn.remove();
-        
-        // Full white-out transition
-        document.getElementById('white-out').style.opacity = 1;
-        
-        setTimeout(() => {
-            // Reset state completely
-            state = JSON.parse(JSON.stringify(INITIAL_STATE));
-            
-            // Re-initialize everything
-            renderUpgrades();
-            updateUI();
-            document.getElementById('white-out').style.opacity = 0;
-            
-            alert("Total reset complete.\nWelcome back to the Void. ●");
-        }, 1000);
-    }const INITIAL_STATE = {
-        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
-        combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
-        archive: [], currentRotation: 0, clickSpinVelocity: 0,
-        upgrades: {
-            phys: [
-                { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, count: 0, era: 0 },
-                { id: 'p2', name: "Quantum Spark", cost: 80, r: 5, count: 0, era: 1 },
-                { id: 'p3', name: "Atomic Bonding", cost: 1000, r: 50, count: 0, era: 2 }
-            ],
-            dna: [
-                { id: 'd1', name: "Data Streams", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
-                { id: 'd2', name: "Neural Logic", cost: 1000, m: 3.5, count: 0, era: 7 }
-            ]
-        }
-    };
+// --- DATA ---
+const STORAGE_KEY = 'universal_master_v10';
+const INITIAL_STATE = {
+    uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
+    combo: 1, lastClick: Date.now(), lastTick: Date.now(), path: null, archive: [],
+    upgrades: { phys: [], dna: [] }
+};
 
     const stages = [
     // --- PHYSICAL/CHEMICAL ---
@@ -936,44 +883,179 @@ document.addEventListener('click', function(e) {
         ripple.style.setProperty('--ripple-x', x + 'px');
         ripple.style.setProperty('--ripple-y', y + 'px');
         ripple.style.setProperty('--ripple-size', size + 'px');
+let state;
 
-        // Set ripple color from theme/path
-        let color = '#00ff88'; // default ATP green
-        if (btn.id === 'rebirth-btn') {
-            color = '#ffffff';
-        } else if (state?.path) {
-            color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${state.path}`).trim() || color;
-        }
-        ripple.style.setProperty('--ripple-color', color);
-
-        btn.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 800);
-    }
-}, true);
-// --- REPLACE THE VERY BOTTOM OF YOUR SCRIPT ---
-// Initialize State
-state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
-
-// Run Offline Gains first
-applyOfflineEarnings();
-
-// Then setup UI and Dynamic Upgrades
-checkDyn(); 
-renderUpgrades(); 
-updateUI(); 
-
-// Start Loops
-animate();
-setInterval(() => {
-    const b = Math.pow(2, state.uni - 1);
-    state.atp += (state.atpRate * state.multi * b) / 10;
-    state.dna += (state.dnaRate * b) / 10;
-    state.total += (state.atpRate * state.multi * b) / 10;
-    if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
-    updateUI();
-}, 100);
-initGame();
+// --- ENGINE ---
+function initGame() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    state = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(INITIAL_STATE));
     
+    applyOfflineEarnings();
+    checkDyn();
+    renderUpgrades();
+    updateUI();
+    
+    setInterval(() => {
+        const b = Math.pow(2, state.uni - 1);
+        const gain = (state.atpRate * state.multi * b) / 10;
+        state.atp += gain;
+        state.total += gain;
+        state.dna += (state.dnaRate * b) / 10;
+        updateUI();
+    }, 100);
+
+    animate();
+}
+
+function handleClick() {
+    const b = Math.pow(2, state.uni - 1);
+    const gain = state.click * state.multi * b;
+    state.atp += gain;
+    state.total += gain;
+
+    // Ripple
+    const r = document.createElement('div');
+    r.className = 'ripple';
+    r.style.left = '50%'; r.style.top = '50%';
+    r.style.width = '300px'; r.style.height = '300px';
+    
+    let pathKey = state.path === 'predatory' ? 'pred' : 'soc';
+    let color = state.path ? getComputedStyle(document.documentElement).getPropertyValue(`--path-${pathKey}`).trim() : '#00ff88';
+    r.style.background = `radial-gradient(circle, ${color} 0%, transparent 70%)`;
+    
+    document.getElementById('specimen-container').appendChild(r);
+    setTimeout(() => r.remove(), 800);
+    
+    updateUI();
+}
+
+function buy(type, i) {
+    const u = state.upgrades[type][i];
+    if (state.atp >= u.cost) {
+        state.atp -= u.cost;
+        if (u.r) { if(type==='phys') state.atpRate += u.r; else state.dnaRate += u.r; }
+        if (u.addClick) state.click += u.addClick;
+        u.count = (u.count || 0) + 1;
+        u.cost = Math.floor(u.cost * 1.5);
+        
+        renderUpgrades();
+        updateUI();
+
+        const card = document.getElementById(`card-${u.id}`);
+        if(card) {
+            card.classList.remove('upgrade-purchased');
+            void card.offsetWidth;
+            card.classList.add('upgrade-purchased');
+        }
+        spawnFloaty(document.getElementById(`btn-${u.id}`), u.r ? `+${u.r}/s` : `+${u.addClick} Click`);
+    }
+}
+
+function updateUI() {
+    document.getElementById('atp-display').innerText = formatNum(state.atp);
+    document.getElementById('dna-display').innerText = formatNum(state.dna);
+    
+    const s = stages[state.stage];
+    document.getElementById('stage-name').innerText = s.name;
+    document.getElementById('specimen').innerText = s.emoji;
+    
+    const prev = state.stage > 0 ? stages[state.stage-1].goal : 0;
+    const progress = ((state.total - prev) / (s.goal - prev)) * 100;
+    document.getElementById('progress-fill').style.width = Math.min(progress, 100) + "%";
+    document.getElementById('progress-stats').innerText = `${formatNum(state.total - prev)} / ${formatNum(s.goal - prev)}`;
+
+    if (state.total >= s.goal && state.stage < stages.length - 1) {
+        state.stage++;
+        if(state.stage === 2) toggleModal('path-modal');
+        checkDyn();
+        renderUpgrades();
+    }
+
+    if(state.stage >= 2) document.getElementById('dna-panel').classList.remove('hidden-panel');
+    
+    if (state.path) {
+        let pathKey = state.path === 'predatory' ? 'pred' : 'soc';
+        let color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${pathKey}`).trim();
+        document.getElementById('specimen-container').style.borderColor = color;
+        document.getElementById('specimen-container').style.boxShadow = `0 0 40px ${color}`;
+    }
+
+    state.lastTick = Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function applyOfflineEarnings() {
+    const now = Date.now();
+    const elapsed = Math.floor((now - state.lastTick) / 1000);
+    if (elapsed > 10) {
+        const b = Math.pow(2, state.uni - 1);
+        const gain = (state.atpRate * state.multi * b) * elapsed;
+        state.atp += gain;
+        state.total += gain;
+        alert(`Away for ${elapsed}s. Gained ${formatNum(gain)} Potential.`);
+    }
+}
+
+function checkDyn() {
+    ['phys', 'dna'].forEach(type => {
+        lib[type].forEach(u => {
+            if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) {
+                state.upgrades[type].push({...u});
+            }
+        });
+    });
+}
+
+function renderUpgrades() {
+    ['phys', 'dna'].forEach(type => {
+        const container = document.getElementById(type + '-upgrades');
+        container.innerHTML = state.upgrades[type].map((u, i) => `
+            <div class="upgrade-card" id="card-${u.id}">
+                <div style="flex:1"><b>${u.name}</b><br><small>Lvl ${u.count || 0}</small></div>
+                <button id="btn-${u.id}" onclick="buy('${type}', ${i})" ${state.atp < u.cost ? 'disabled' : ''}>
+                    ${formatNum(u.cost)}
+                </button>
+            </div>
+        `).join('');
+    });
+}
+
+function spawnFloaty(el, text) {
+    if(!el) return;
+    const rect = el.getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'floaty-text';
+    f.innerText = text;
+    f.style.left = `${rect.left + rect.width / 2}px`;
+    f.style.top = `${rect.top}px`;
+    f.style.color = 'var(--atp-color)';
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 800);
+}
+
+function formatNum(n) {
+    if (n < 1000) return Math.floor(n);
+    const units = ["K", "M", "B", "T"];
+    const i = Math.floor(Math.log10(n) / 3);
+    return (n / Math.pow(10, i * 3)).toFixed(1) + units[i-1];
+}
+
+function toggleModal(id) {
+    const m = document.getElementById(id);
+    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function selectPath(p) { state.path = p; toggleModal('path-modal'); updateUI(); }
+
+function confirmTotalReset() { if(confirm("RESET ALL?")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+
+function animate() {
+    const container = document.getElementById('specimen-container');
+    container.style.transform = `rotate(${Date.now() / 50 % 360}deg)`;
+    requestAnimationFrame(animate);
+}
+
+initGame();
 </script>
 </body>
 </html>
