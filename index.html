@@ -219,7 +219,6 @@ button:active:not(:disabled) {
 .ripple {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, var(--ripple-color, #00ff88) 0%, transparent 70%);
     pointer-events: none;
     left: var(--ripple-x);
     top: var(--ripple-y);
@@ -514,24 +513,40 @@ const lib = {
     }
 
     function handleClick() {
-        const now = Date.now(); 
-        state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
-        state.lastClick = now; 
-        const b = Math.pow(2, state.uni - 1), gain = state.click * state.multi * state.combo * b;
-        state.atp += gain; 
-        state.total += gain; 
-        state.clickSpinVelocity = 35;
-        const r = document.createElement('div');
-        r.className = 'ripple';
-        r.style.setProperty('--ripple-x', '130px'); // center of 260px circle
-        r.style.setProperty('--ripple-y', '130px');
-        r.style.setProperty('--ripple-size', '400px');
-        const color = state.path ? `var(--path-${state.path})` : 'var(--atp-color)';
-        r.style.background = color.replace(')', ', 0.3)').replace('rgb', 'rgba');
-        document.getElementById('specimen-container').appendChild(r);
-        setTimeout(() => r.remove(), 800);
-        updateUI();
-    }
+    const now = Date.now(); 
+    state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
+    state.lastClick = now; 
+    
+    const b = Math.pow(2, state.uni - 1);
+    const gain = state.click * state.multi * state.combo * b;
+    state.atp += gain; 
+    state.total += gain; 
+    state.clickSpinVelocity = 35;
+
+    const r = document.createElement('div');
+    r.className = 'ripple';
+    
+    // Positioning logic (relative to the 260px container)
+    r.style.setProperty('--ripple-x', '130px');
+    r.style.setProperty('--ripple-y', '130px');
+    r.style.setProperty('--ripple-size', '400px');
+
+    // COLOR LOGIC FIX:
+    // Match state.path ('predatory' or 'social') to your CSS variables ('pred' or 'soc')
+    let pathKey = state.path === 'predatory' ? 'pred' : 'soc';
+    let baseColor = state.path 
+        ? getComputedStyle(document.documentElement).getPropertyValue(`--path-${pathKey}`).trim()
+        : getComputedStyle(document.documentElement).getPropertyValue(`--atp-color`).trim();
+
+    // Apply the color with transparency for the ripple effect
+    r.style.background = `radial-gradient(circle, ${baseColor} 0%, transparent 70%)`;
+    
+    document.getElementById('specimen-container').appendChild(r);
+    setTimeout(() => r.remove(), 800);
+    
+    updateUI();
+}
+
 function buy(type, i) {
     const u = state.upgrades[type][i];
     const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
