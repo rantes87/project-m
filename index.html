@@ -344,898 +344,372 @@ button:active:not(:disabled) {
     { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits.", scienceDesc: "AI surpasses human intelligence, triggering recursive self-improvement (Kurzweil ~2045)." },
     { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars.", scienceDesc: "Orbital satellites capture 100% stellar output, Kardashev Type II civilization." },
     { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware.", scienceDesc: "Teilhard de Chardin: ultimate complexity converges matter and consciousness." },
-    { name: "Unive           <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
-
-                <div id="atp-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">POTENTIAL</div>
-
-                <div id="atp-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
-
-            </div>
-
-            <button id="transmute-btn" onclick="transmute()" title="Convert Energy to Structure">⇄</button>
-
-            <div class="res-box">
-
-                <div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div>
-
-                <div id="dna-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">STRUCTURE</div>
-
-                <div id="dna-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
-
-            </div>
-
-        </div>
-
-
-        <div id="specimen-wrapper">
-
-            <div id="resonance-halo"><span id="combo-val">x1.0</span></div>
-
-            <div id="specimen-container">
-
-                <div id="specimen" class="singularity" onclick="handleClick()">●</div>
-
-            </div>
-
-        </div>
-
-
-        <div style="text-align:center; width: 100%; max-width: 500px;">
-
-            <h2 id="stage-name" class="reveal-target" style="font-family:'Orbitron'; margin:0; font-size:1.3em;">Singularity</h2>
-
-            <div style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px; margin:15px 0; overflow:hidden;"><div id="progress-fill"></div></div>
-
-            <div id="progress-stats" class="reveal-target" style="font-family:'Orbitron'; font-size:0.6em; opacity:0.6;">0 / 500</div>
-
-            <p id="stage-desc" class="reveal-target" style="font-size:0.8em; font-style:italic; margin-top:10px; opacity:0.7;"></p>
-
-        </div>
-
-    </div>
-
-
-    <div id="panels-container">
-
-        <div class="panel reveal-target" id="phys-panel">
-
-            <div class="panel-header">Physical Evolution</div>
-
-            <div id="phys-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
-
-        </div>
-
-        <div class="panel reveal-target hidden-panel" id="dna-panel">
-
-            <div class="panel-header" style="color:var(--dna-color)">Complexity Research</div>
-
-            <div id="dna-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<div id="path-modal" class="modal"><div class="modal-content"><h2>CHOOSE PATH</h2><div style="display:flex; gap:15px; margin-top:20px;"><button onclick="selectPath('predatory')" style="background:var(--path-pred); filter:none; opacity:1; flex:1;">HUNTER</button><button onclick="selectPath('social')" style="background:var(--path-soc); filter:none; opacity:1; flex:1;">HIVE MIND</button></div></div></div>
-
-<div id="archive-modal" class="modal"><div class="modal-content"><h1>COSMIC ARCHIVE</h1><div id="specimen-history"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px; filter:none; opacity:1;">CLOSE</button></div></div>
-
-<div id="science-modal" class="modal">
-
-    <div class="modal-content" style="max-width: 600px; text-align: left;">
-
-        <h2 id="science-title" style="font-family:'Orbitron'; color: var(--atp-color);"></h2>
-
-        <p id="science-desc" style="font-size: 1em; line-height: 1.6; opacity: 0.9; white-space: pre-wrap;"></p>
-
-        <button onclick="toggleModal('science-modal')" style="margin-top: 20px; filter: none; opacity: 1;">CLOSE</button>
-
-    </div>
-
-</div>
-
-<script>
-
-    // --- CORE LOGIC ---
-
-    const STORAGE_KEY = 'universal_master_v9';
-
-    function confirmTotalReset() {
-
-        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
-
-            performTotalReset();
-
-        }
-
-    }
-
-
-    function performTotalReset() {
-
-        // Remove saved data
-
-        localStorage.removeItem(STORAGE_KEY);
-
-        
-
-        // Remove any lingering Big Crunch button
-
-        const oldBtn = document.getElementById('rebirth-btn');
-
-        if (oldBtn) oldBtn.remove();
-
-        
-
-        // Full white-out transition
-
-        document.getElementById('white-out').style.opacity = 1;
-
-        
-
-        setTimeout(() => {
-
-            // Reset state completely
-
-            state = JSON.parse(JSON.stringify(INITIAL_STATE));
-
-            
-
-            // Re-initialize everything
-
-            renderUpgrades();
-
-            updateUI();
-
-            document.getElementById('white-out').style.opacity = 0;
-
-            
-
-            alert("Total reset complete.\nWelcome back to the Void. ●");
-
-        }, 1000);
-
-    }const INITIAL_STATE = {
-
-        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
-
-        combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
-
-        archive: [], currentRotation: 0, clickSpinVelocity: 0,
-
-        upgrades: {
-
-            phys: [
-
-                { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, count: 0, era: 0 },
-
-                { id: 'p2', name: "Quantum Spark", cost: 80, r: 5, count: 0, era: 1 },
-
-                { id: 'p3', name: "Atomic Bonding", cost: 1000, r: 50, count: 0, era: 2 }
-
-            ],
-
-            dna: [
-
-                { id: 'd1', name: "Data Streams", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
-
-                { id: 'd2', name: "Neural Logic", cost: 1000, m: 3.5, count: 0, era: 7 }
-
-            ]
-
-        }
-
-    };
-
-
-    const stages = [
-
-    // --- PHYSICAL/CHEMICAL ---
-
-    { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density.", scienceDesc: "A point of infinite density where spacetime curvature diverges, theorized as the Big Bang origin." },
-
-    { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge.", scienceDesc: "Quarks and leptons form in quark-gluon plasma ~10⁻⁶ seconds post-Big Bang, bound by strong force." },
-
-    { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools.", scienceDesc: "Electrons bind to nuclei ~380,000 years post-Big Bang, forming neutral atoms during recombination." },
-
-    { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form.", scienceDesc: "First H₂ molecules form via radiative association as universe cools further." },
-
-    { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup.", scienceDesc: "Carbon-based molecules like amino acids arise in primordial soup via hydrothermal vents or meteorites." },
-
-    
-
-    // --- BIOLOGICAL ---
-
-    { name: "Genetic Code", emoji: "🌀", goal: 10000000, era: "GENETIC", desc: "Information encoded.", scienceDesc: "DNA/RNA triplet codons translate nucleotides to amino acids, evolved from RNA world hypothesis." },
-
-    { name: "Eukaryote", emoji: "🦠", goal: 50000000, era: "CELLULAR", desc: "Complex internal structures.", scienceDesc: "Nucleus and organelles via endosymbiosis of bacteria ~2 billion years ago." },
-
-    { name: "Multicellular", emoji: "🧫", goal: 250000000, era: "BIOLOGICAL", desc: "Specialized cell colonies.", scienceDesc: "Cell adhesion and signaling enable specialization ~1 billion years ago." },
-
-    { name: "Aquatic Life", emoji: "🐟", goal: 1000000000, era: "AQUATIC", desc: "The oceans teem.", scienceDesc: "Cambrian explosion: diverse vertebrates with gills and fins ~540 million years ago." },
-
-    { name: "Terrestrial", emoji: "🦎", goal: 5000000000, era: "LAND", desc: "Walking on dry land.", scienceDesc: "Tetrapods evolve lungs and limbs ~400 million years ago for land colonization." },
-
-    { name: "Primate", emoji: "🐒", goal: 25000000000, era: "PRIMATE", desc: "Social grooming and tools.", scienceDesc: "Arboreal mammals with stereoscopic vision and grasping hands ~65 million years ago." },
-
-    
-
-    // --- CONSCIOUS/TECHNOLOGICAL ---
-
-    { name: "Sapiens", emoji: "🧠", goal: 100000000000, era: "SAPIENT", desc: "Awareness of self.", scienceDesc: "Homo sapiens: 1,350 cm³ brain enables symbolic thought ~300,000 years ago." },
-
-    { name: "Linguistic", emoji: "🗣️", goal: 500000000000, era: "CULTURAL", desc: "Sharing myths and knowledge.", scienceDesc: "Complex syntax and recursion evolve ~50,000 years ago for abstract communication." },
-
-    { name: "Industrial", emoji: "⚙️", goal: 2500000000000, era: "INDUSTRIAL", desc: "The era of machines.", scienceDesc: "Steam engines apply thermodynamics for mechanized production from 1760s." },
-
-    { name: "Digital", emoji: "💻", goal: 10000000000000, era: "DIGITAL", desc: "The world, networked.", scienceDesc: "Transistors enable binary computing and global internet ~1940s onward." },
-
-    
-
-    // --- TRANSCENDENCE ---
-
-    { name: "Post-Human", emoji: "🧬", goal: 50000000000000, era: "CYBORG", desc: "Merging biology with silicon.", scienceDesc: "CRISPR and neural implants enhance humans beyond natural evolution." },
-
-    { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits.", scienceDesc: "AI surpasses human intelligence, triggering recursive self-improvement (Kurzweil ~2045)." },
-
-    { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars.", scienceDesc: "Orbital satellites capture 100% stellar output, Kardashev Type II civilization." },
-
-    { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware.", scienceDesc: "Teilhard de Chardin: ultimate complexity converges matter and consciousness." },
-
-    { name: "Universal One", emoji: "✨", goal: 10000000000000000, era: "DIVINE", desc: "Entropy reversed. Unity.", scienceDesc: "Panpsychism culminates: cosmos achieves holistic self-awareness." },
-
-    // --- DIVINE / GODHOOD ---
-
-    { name: "Solar Deity", emoji: "☀️", goal: 1e17, era: "SOLAR", desc: "Your will dictates the fusion of stars.", scienceDesc: "Matrioshka brain: nested Dyson shells compute at stellar core temperatures." },
-
-    { name: "Galactic Overmind", emoji: "🌌", goal: 1e19, era: "GALACTIC_GOD", desc: "A billion stars, a single thought.", scienceDesc: "Kardashev Type III: galaxy-spanning network processes information at galactic scale." },
-
-    { name: "Reality Weaver", emoji: "🧶", goal: 1e21, era: "DIMENSIONAL", desc: "Tapping into the source code of physics.", scienceDesc: "Quantum gravity mastery: engineering extra dimensions and fundamental constants." },
-
-    { name: "The One", emoji: "👁️‍🗨️", goal: 1e23, era: "SUPREME", desc: "Beyond time. Beyond space. Everything is you.", scienceDesc: "Simulation hypothesis apex: total control over multiversal base reality." },
-
-    { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew.", scienceDesc: "Gravitational recollapse: expansion reverses, forming new singularity for cyclic Big Bang." }
-
+    { name: "Universal One", emoji: "✨", goal: 10000000000000000, era: "DIVINE", desc: "Entropy reversed. Unity.", scienceDesc: "Panpsychism culminates: cosmos achieves holistic self-awareness." },
+    // --- DIVINE / GODHOOD ---
+    { name: "Solar Deity", emoji: "☀️", goal: 1e17, era: "SOLAR", desc: "Your will dictates the fusion of stars.", scienceDesc: "Matrioshka brain: nested Dyson shells compute at stellar core temperatures." },
+    { name: "Galactic Overmind", emoji: "🌌", goal: 1e19, era: "GALACTIC_GOD", desc: "A billion stars, a single thought.", scienceDesc: "Kardashev Type III: galaxy-spanning network processes information at galactic scale." },
+    { name: "Reality Weaver", emoji: "🧶", goal: 1e21, era: "DIMENSIONAL", desc: "Tapping into the source code of physics.", scienceDesc: "Quantum gravity mastery: engineering extra dimensions and fundamental constants." },
+    { name: "The One", emoji: "👁️‍🗨️", goal: 1e23, era: "SUPREME", desc: "Beyond time. Beyond space. Everything is you.", scienceDesc: "Simulation hypothesis apex: total control over multiversal base reality." },
+    { name: "The Big Crunch", emoji: "🐰", goal: 1e25, era: "END", desc: "The universe collapses to begin anew.", scienceDesc: "Gravitational recollapse: expansion reverses, forming new singularity for cyclic Big Bang." }
 ];
 
-
 const lib = {
+    phys: [
+        // --- 1. MICRO ERA (VOID to MOLECULAR) ---
+        { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, era: 0 },
+        { id: 'pa1', name: "Neutrino Pulse", cost: 150, r: 12, era: 1 },
+        { id: 'pa2', name: "Electron Shell", cost: 1200, r: 80, era: 2 },
+        { id: 'pa3', name: "Covalent Bond", cost: 8000, r: 450, era: 3 },
+        { id: 'pa4', name: "Crystal Lattice", cost: 50000, r: 2200, era: 4 },
 
-    phys: [
+        // --- 2. BIOLOGICAL ERA (GENETIC to LAND) ---
+        { id: 'pb1', name: "Mitochondria", cost: 100000, r: 8000, era: 6 },
+        { id: 'pb2', name: "Neural Bundles", cost: 1e6, r: 45000, era: 8 },
+        { id: 'pb3', name: "Calcified Skeleton", cost: 2.5e7, r: 180000, era: 9 },
+        { id: 'pb4', name: "Lung Adaptation", cost: 5e8, r: 900000, era: 10 },
 
-        // --- 1. MICRO ERA (VOID to MOLECULAR) ---
+        // --- 3. CIVILIZATION ERA (SAPIENT to DIGITAL) ---
+        { id: 'pc1', name: "Stone Tools", cost: 1e10, addClick: 50000, era: 11 },
+        { id: 'pc2', name: "Agricultural Surplus", cost: 1e11, r: 5e7, era: 12 },
+        { id: 'pc3', name: "Steam Engine", cost: 2.5e12, r: 4e8, era: 13 },
+        { id: 'pc4', name: "Silicon Integration", cost: 1e13, r: 2e9, era: 14 },
 
-        { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, era: 0 },
-
-        { id: 'pa1', name: "Neutrino Pulse", cost: 150, r: 12, era: 1 },
-
-        { id: 'pa2', name: "Electron Shell", cost: 1200, r: 80, era: 2 },
-
-        { id: 'pa3', name: "Covalent Bond", cost: 8000, r: 450, era: 3 },
-
-        { id: 'pa4', name: "Crystal Lattice", cost: 50000, r: 2200, era: 4 },
-
-
-        // --- 2. BIOLOGICAL ERA (GENETIC to LAND) ---
-
-        { id: 'pb1', name: "Mitochondria", cost: 100000, r: 8000, era: 6 },
-
-        { id: 'pb2', name: "Neural Bundles", cost: 1e6, r: 45000, era: 8 },
-
-        { id: 'pb3', name: "Calcified Skeleton", cost: 2.5e7, r: 180000, era: 9 },
-
-        { id: 'pb4', name: "Lung Adaptation", cost: 5e8, r: 900000, era: 10 },
-
-
-        // --- 3. CIVILIZATION ERA (SAPIENT to DIGITAL) ---
-
-        { id: 'pc1', name: "Stone Tools", cost: 1e10, addClick: 50000, era: 11 },
-
-        { id: 'pc2', name: "Agricultural Surplus", cost: 1e11, r: 5e7, era: 12 },
-
-        { id: 'pc3', name: "Steam Engine", cost: 2.5e12, r: 4e8, era: 13 },
-
-        { id: 'pc4', name: "Silicon Integration", cost: 1e13, r: 2e9, era: 14 },
-
-
-        // --- 4. COSMIC ERA (CYBORG to SUPREME) ---
-
-        { id: 'pd1', name: "Carbon Nano-Weave", cost: 5e14, r: 5e10, era: 15 },
-
-        { id: 'pd2', name: "Quantum Entanglement", cost: 1e15, addClick: 1e9, era: 16 },
-
-        { id: 'pd3', name: "Dyson Ring", cost: 1e17, r: 8e11, era: 18 },
-
-        { id: 'pd4', name: "Singularity Engine", cost: 1e20, r: 1e14, era: 21 },
-
-        { id: 'pd5', name: "Reality Anchor", cost: 1e23, r: 5e16, era: 23 }
-
-    ],
-
-    dna: [
-
-        { id: 'da1', name: "Membrane Logic", cost: 50000, r: 50, era: 5, currency: 'atp' },
-
-        { id: 'da2', name: "RNA Transcription", cost: 500, r: 120, era: 6 },
-
-        { id: 'da3', name: "Symbiosis", cost: 2500, m: 1.5, era: 7 },
-
-        { id: 'da4', name: "Predation Tax", cost: 15000, m: 2.2, era: 9 },
-
-        { id: 'dc1', name: "Abstract Thought", cost: 100000, r: 5000, era: 11 },
-
-        { id: 'dc2', name: "Collective Myth", cost: 1e6, m: 3.0, era: 12 },
-
-        { id: 'dc3', name: "Digital Consciousness", cost: 5e7, r: 250000, era: 14 },
-
-        { id: 'dd1', name: "Matrioshka Brain", cost: 1e9, r: 1e6, era: 17 },
-
-        { id: 'dd2', name: "Entropy Reversal", cost: 1e11, m: 5.0, era: 19 },
-
-        { id: 'dd3', name: "Chrono-Manipulation", cost: 1e14, r: 5e9, era: 22 },
-
-        { id: 'dd4', name: "Multiversal Logic", cost: 1e16, m: 10.0, era: 24 }
-
-    ]
-
+        // --- 4. COSMIC ERA (CYBORG to SUPREME) ---
+        { id: 'pd1', name: "Carbon Nano-Weave", cost: 5e14, r: 5e10, era: 15 },
+        { id: 'pd2', name: "Quantum Entanglement", cost: 1e15, addClick: 1e9, era: 16 },
+        { id: 'pd3', name: "Dyson Ring", cost: 1e17, r: 8e11, era: 18 },
+        { id: 'pd4', name: "Singularity Engine", cost: 1e20, r: 1e14, era: 21 },
+        { id: 'pd5', name: "Reality Anchor", cost: 1e23, r: 5e16, era: 23 }
+    ],
+    dna: [
+        { id: 'da1', name: "Membrane Logic", cost: 50000, r: 50, era: 5, currency: 'atp' },
+        { id: 'da2', name: "RNA Transcription", cost: 500, r: 120, era: 6 },
+        { id: 'da3', name: "Symbiosis", cost: 2500, m: 1.5, era: 7 },
+        { id: 'da4', name: "Predation Tax", cost: 15000, m: 2.2, era: 9 },
+        { id: 'dc1', name: "Abstract Thought", cost: 100000, r: 5000, era: 11 },
+        { id: 'dc2', name: "Collective Myth", cost: 1e6, m: 3.0, era: 12 },
+        { id: 'dc3', name: "Digital Consciousness", cost: 5e7, r: 250000, era: 14 },
+        { id: 'dd1', name: "Matrioshka Brain", cost: 1e9, r: 1e6, era: 17 },
+        { id: 'dd2', name: "Entropy Reversal", cost: 1e11, m: 5.0, era: 19 },
+        { id: 'dd3', name: "Chrono-Manipulation", cost: 1e14, r: 5e9, era: 22 },
+        { id: 'dd4', name: "Multiversal Logic", cost: 1e16, m: 10.0, era: 24 }
+    ]
 };
 
 
 
+    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
+    let lastOfflineTime = Date.now();
 
-    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
+    function transmute() {
+        if (state.atp >= 100000) {
+            const amount = state.atp * 0.2;
+            state.atp -= amount; 
+            state.dna += (amount / 400); 
+            updateUI();
+        }
+    }
 
-    let lastOfflineTime = Date.now();
+    function handleClick() {
+        const now = Date.now(); 
+        state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
+        state.lastClick = now; 
+        const b = Math.pow(2, state.uni - 1), gain = state.click * state.multi * state.combo * b;
+        state.atp += gain; 
+        state.total += gain; 
+        state.clickSpinVelocity = 35;
+        const r = document.createElement('div');
+        r.className = 'ripple';
+        r.style.setProperty('--ripple-x', '130px'); // center of 260px circle
+        r.style.setProperty('--ripple-y', '130px');
+        r.style.setProperty('--ripple-size', '400px');
+        const color = state.path ? `var(--path-${state.path})` : 'var(--atp-color)';
+        r.style.background = color.replace(')', ', 0.3)').replace('rgb', 'rgba');
+        document.getElementById('specimen-container').appendChild(r);
+        setTimeout(() => r.remove(), 800);
+        updateUI();
+    }
 
-
-    function transmute() {
-
-        if (state.atp >= 100000) {
-
-            const amount = state.atp * 0.2;
-
-            state.atp -= amount; 
-
-            state.dna += (amount / 400); 
-
-            updateUI();
-
-        }
-
-    }
-
-
-    function handleClick() {
-
-        const now = Date.now(); 
-
-        state.combo = (now - state.lastClick < 1000) ? Math.min(10, state.combo + 0.1) : 1.1;
-
-        state.lastClick = now; 
-
-        const b = Math.pow(2, state.uni - 1), gain = state.click * state.multi * state.combo * b;
-
-        state.atp += gain; 
-
-        state.total += gain; 
-
-        state.clickSpinVelocity = 35;
-
-        const r = document.createElement('div'); 
-
-        r.className = 'ripple';
-
-        if(state.path) r.style.borderColor = `var(--path-${state.path})`;
-
-        document.getElementById('specimen-container').appendChild(r);
-
-        setTimeout(() => r.remove(), 600);
-
-        updateUI();
-
-    }
-
-
-    function buy(type, i) {
-
-    const u = state.upgrades[type][i];
-
-    const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
-
-    
-
-    if (state[cur] >= u.cost) {
-
-        state[cur] -= u.cost;
-
-        u.count++;
-
-        
-
-        // Apply effects
-
-        if (u.r) {
-
-            if (type === 'phys') state.atpRate += u.r;
-
-            else state.dnaRate += u.r;
-
-        }
-
-        if (u.m) {
-
-            state.multi *= u.m;
-
-        }
-
-        if (u.addClick) {
-
-            state.click += u.addClick;
-
-        }
-
-        
-
-        // Increase cost for next purchase
-
-        u.cost = Math.floor(u.cost * 1.6);
-
-        
-
-        renderUpgrades();
-
-        updateUI();
-
-    }
-
+    function buy(type, i) {
+    const u = state.upgrades[type][i];
+    const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
+    
+    if (state[cur] >= u.cost) {
+        state[cur] -= u.cost;
+        u.count++;
+        
+        // Apply effects
+        if (u.r) {
+            if (type === 'phys') state.atpRate += u.r;
+            else state.dnaRate += u.r;
+        }
+        if (u.m) {
+            state.multi *= u.m;
+        }
+        if (u.addClick) {
+            state.click += u.addClick;
+        }
+        
+        // Increase cost for next purchase
+        u.cost = Math.floor(u.cost * 1.6);
+        
+        renderUpgrades();
+        updateUI();
+    }
 }
 
 
-
-    function applyOfflineEarnings() {
-
-        const now = Date.now();
-
-        const elapsedSec = Math.floor((now - lastOfflineTime) / 1000);
-
-        if (elapsedSec > 0) {
-
-            const b = Math.pow(2, state.uni - 1);
-
-            const gainPerSec = state.atpRate * state.multi * b;
-
-            const earned = gainPerSec * elapsedSec;
-
-            state.atp += earned;
-
-            state.dna += state.dnaRate * b * elapsedSec;
-
-            state.total += earned;
-
-        }
-
-        lastOfflineTime = now;
-
-    }
-
-
-    function updateUI() {
-
-        const b = Math.pow(2, state.uni - 1);
-
-        document.getElementById('atp-display').innerText = formatNum(state.atp);
-
-        document.getElementById('dna-display').innerText = formatNum(state.dna);
-
-        document.getElementById('atp-ps').innerText = `+${formatNum(state.atpRate * state.multi * b)}/s`;
-
-        document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b)}/s`;
-
-        document.getElementById('uni-val').innerText = state.uni;
-
-        document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
-
-
-        const s = stages[state.stage], spec = document.getElementById('specimen');
-
-        spec.innerText = s.emoji; 
-
-        spec.className = state.stage === 0 ? 'singularity' : '';
-
-        document.getElementById('stage-name').innerText = s.name;
-
-        document.getElementById('stage-desc').innerText = s.desc || "";
-
-        document.getElementById('era-val').innerText = s.era;
-
-        
-
-        const prev = state.stage > 0 ? stages[state.stage-1].goal : 0;
-
-        document.getElementById('progress-fill').style.width = Math.min(((state.total-prev)/(s.goal-prev))*100, 100) + "%";
-
-        document.getElementById('progress-stats').innerText = `${formatNum(state.total - prev)} / ${formatNum(s.goal - prev)}`;
-
-
-        let opacity = state.stage === 0 ? Math.max(0.05, state.total / 500) : 1;
-
-        document.querySelectorAll('.reveal-target').forEach(el => { 
-
-            el.style.opacity = opacity; 
-
-            el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; 
-
-        });
-
-
-        // Safer button disabling using current state
-
-        document.querySelectorAll('.upgrade-card button').forEach(btn => {
-
-            const onclick = btn.getAttribute('onclick');
-
-            const match = onclick.match(/buy\('(\w+)', (\d+)\)/);
-
-            if (match) {
-
-                const type = match[1];
-
-                const index = parseInt(match[2]);
-
-                const u = state.upgrades[type][index];
-
-                if (u) {
-
-                    const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
-
-                    btn.disabled = state[currency] < u.cost;
-
-                }
-
-            }
-
-        });
-
-
-        document.getElementById('transmute-btn').disabled = state.atp < 100000;
-
-        document.getElementById('transmute-btn').style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
-
-        if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
-
-
-        const h = document.getElementById('resonance-halo'); 
-
-        h.className = state.combo > 1.2 ? 'active' : '';
-
-        document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
-
-        if (state.path) {
-
-            const color = `var(--path-${state.path})`;
-
-            document.getElementById('specimen-container').style.borderColor = color;
-
-            h.style.borderColor = color;
-
-        }
-
-
-        // Stage progression logic
-
-        if (state.total >= s.goal) {
-
-            if (state.stage < stages.length - 1) {
-
-                document.getElementById('white-out').style.opacity = 0.5; 
-
-                setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
-
-                if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
-
-                state.stage++; 
-
-                if(state.stage === 4 && !state.path) toggleModal('path-modal');
-
-                checkDyn(); 
-
-                renderUpgrades();
-
-            }
-
-        }
-
-
-        // --- Big Crunch Button Logic (runs every update) ---
-
-        const existingBtn = document.getElementById('rebirth-btn');
-
-        const isFinalStage = state.stage >= stages.length - 1 && state.total >= stages[stages.length - 1].goal;
-
-
-        if (isFinalStage && !existingBtn) {
-
-            const btn = document.createElement('button');
-
-            btn.id = 'rebirth-btn';
-
-            btn.innerText = "INITIATE BIG CRUNCH";
-
-            btn.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; background:white; color:black; padding:20px 40px; font-size:1.5em; cursor:pointer; border-radius:16px; font-family:'Orbitron';";
-
-            btn.onclick = bigCrunch;
-
-            document.body.appendChild(btn);
-
-        } else if (!isFinalStage && existingBtn) {
-
-            existingBtn.remove();
-
-        }
-
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-
-    }  // ← This correctly closes the updateUI() function
-
-
-
-    // Main game loop
-
-    setInterval(() => {
-
-        const b = Math.pow(2, state.uni - 1);
-
-        state.atp += (state.atpRate * state.multi * b) / 10;
-
-        state.dna += (state.dnaRate * b) / 10;
-
-        state.total += (state.atpRate * state.multi * b) / 10;
-
-        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
-
-        updateUI();
-
-    }, 100);
-
-
-    function checkDyn() {
-
-        ['phys', 'dna'].forEach(type => { 
-
-            lib[type].forEach(u => { 
-
-                if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) { 
-
-                    state.upgrades[type].push({...u, count: 0, cost: u.cost}); 
-
-                } 
-
-            }); 
-
-        });
-
-    }
-
-
-    function animate() {
-
-        const container = document.getElementById('specimen-container');
-
-        let speed = 0.2 + ((state.combo - 1) * 0.3);
-
-        if (state.clickSpinVelocity > 0.1) { 
-
-            speed += state.clickSpinVelocity; 
-
-            state.clickSpinVelocity *= 0.92; 
-
-        }
-
-        state.currentRotation = (state.currentRotation + speed) % 360;
-
-        container.style.transform = `rotate(${state.currentRotation}deg)`;
-
-        requestAnimationFrame(animate);
-
-    }
-
+    function applyOfflineEarnings() {
+        const now = Date.now();
+        const elapsedSec = Math.floor((now - lastOfflineTime) / 1000);
+        if (elapsedSec > 0) {
+            const b = Math.pow(2, state.uni - 1);
+            const gainPerSec = state.atpRate * state.multi * b;
+            const earned = gainPerSec * elapsedSec;
+            state.atp += earned;
+            state.dna += state.dnaRate * b * elapsedSec;
+            state.total += earned;
+        }
+        lastOfflineTime = now;
+    }
+
+    function updateUI() {
+        const b = Math.pow(2, state.uni - 1);
+        document.getElementById('atp-display').innerText = formatNum(state.atp);
+        document.getElementById('dna-display').innerText = formatNum(state.dna);
+        document.getElementById('atp-ps').innerText = `+${formatNum(state.atpRate * state.multi * b)}/s`;
+        document.getElementById('dna-ps').innerText = `+${formatNum(state.dnaRate * b)}/s`;
+        document.getElementById('uni-val').innerText = state.uni;
+        document.getElementById('celestial-bunny').style.display = state.uni > 1 ? 'block' : 'none';
+
+        const s = stages[state.stage], spec = document.getElementById('specimen');
+        spec.innerText = s.emoji; 
+        spec.className = state.stage === 0 ? 'singularity' : '';
+        document.getElementById('stage-name').innerText = s.name;
+        document.getElementById('stage-desc').innerText = s.desc || "";
+        document.getElementById('era-val').innerText = s.era;
+        
+        const prev = state.stage > 0 ? stages[state.stage-1].goal : 0;
+        document.getElementById('progress-fill').style.width = Math.min(((state.total-prev)/(s.goal-prev))*100, 100) + "%";
+        document.getElementById('progress-stats').innerText = `${formatNum(state.total - prev)} / ${formatNum(s.goal - prev)}`;
+
+        let opacity = state.stage === 0 ? Math.max(0.05, state.total / 500) : 1;
+        document.querySelectorAll('.reveal-target').forEach(el => { 
+            el.style.opacity = opacity; 
+            el.style.pointerEvents = opacity < 0.2 ? 'none' : 'auto'; 
+        });
+
+        // Safer button disabling using current state
+        document.querySelectorAll('.upgrade-card button').forEach(btn => {
+            const onclick = btn.getAttribute('onclick');
+            const match = onclick.match(/buy\('(\w+)', (\d+)\)/);
+            if (match) {
+                const type = match[1];
+                const index = parseInt(match[2]);
+                const u = state.upgrades[type][index];
+                if (u) {
+                    const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
+                    btn.disabled = state[currency] < u.cost;
+                }
+            }
+        });
+
+        document.getElementById('transmute-btn').disabled = state.atp < 100000;
+        document.getElementById('transmute-btn').style.visibility = state.stage >= 4 ? 'visible' : 'hidden';
+        if (state.stage >= 5) document.getElementById('dna-panel').classList.remove('hidden-panel');
+
+        const h = document.getElementById('resonance-halo'); 
+        h.className = state.combo > 1.2 ? 'active' : '';
+        document.getElementById('combo-val').innerText = `x${state.combo.toFixed(1)}`;
+        if (state.path) {
+            const color = `var(--path-${state.path})`;
+            document.getElementById('specimen-container').style.borderColor = color;
+            h.style.borderColor = color;
+        }
+
+        // Stage progression logic
+        if (state.total >= s.goal) {
+            if (state.stage < stages.length - 1) {
+                document.getElementById('white-out').style.opacity = 0.5; 
+                setTimeout(() => document.getElementById('white-out').style.opacity = 0, 500);
+                if(!state.archive.includes(state.stage)) state.archive.push(state.stage);
+                state.stage++; 
+                if(state.stage === 4 && !state.path) toggleModal('path-modal');
+                checkDyn(); 
+                renderUpgrades();
+            }
+        }
+
+        // --- Big Crunch Button Logic (runs every update) ---
+        const existingBtn = document.getElementById('rebirth-btn');
+        const isFinalStage = state.stage >= stages.length - 1 && state.total >= stages[stages.length - 1].goal;
+
+        if (isFinalStage && !existingBtn) {
+            const btn = document.createElement('button');
+            btn.id = 'rebirth-btn';
+            btn.innerText = "INITIATE BIG CRUNCH";
+            btn.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; background:white; color:black; padding:20px 40px; font-size:1.5em; cursor:pointer; border-radius:16px; font-family:'Orbitron';";
+            btn.onclick = bigCrunch;
+            document.body.appendChild(btn);
+        } else if (!isFinalStage && existingBtn) {
+            existingBtn.remove();
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }  // ← This correctly closes the updateUI() function
+
+
+    // Main game loop
+    setInterval(() => {
+        const b = Math.pow(2, state.uni - 1);
+        state.atp += (state.atpRate * state.multi * b) / 10;
+        state.dna += (state.dnaRate * b) / 10;
+        state.total += (state.atpRate * state.multi * b) / 10;
+        if (Date.now() - state.lastClick > 1500 && state.combo > 1.0) state.combo = Math.max(1.0, state.combo - 0.1);
+        updateUI();
+    }, 100);
+
+    function checkDyn() {
+        ['phys', 'dna'].forEach(type => { 
+            lib[type].forEach(u => { 
+                if (state.stage >= u.era && !state.upgrades[type].find(x => x.id === u.id)) { 
+                    state.upgrades[type].push({...u, count: 0, cost: u.cost}); 
+                } 
+            }); 
+        });
+    }
+
+    function animate() {
+        const container = document.getElementById('specimen-container');
+        let speed = 0.2 + ((state.combo - 1) * 0.3);
+        if (state.clickSpinVelocity > 0.1) { 
+            speed += state.clickSpinVelocity; 
+            state.clickSpinVelocity *= 0.92; 
+        }
+        state.currentRotation = (state.currentRotation + speed) % 360;
+        container.style.transform = `rotate(${state.currentRotation}deg)`;
+        requestAnimationFrame(animate);
+    }
 
 
 function formatNum(n) {
-
-    if(n < 1000) return Math.floor(n).toLocaleString();
-
-    const units = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
-
-    const e = Math.floor(Math.log10(n) / 3);
-
-    if (e > units.length) return n.toExponential(2); // Fallback for massive numbers
-
-    return (n / Math.pow(10, e * 3)).toFixed(1) + units[e-1];
-
+    if(n < 1000) return Math.floor(n).toLocaleString();
+    const units = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+    const e = Math.floor(Math.log10(n) / 3);
+    if (e > units.length) return n.toExponential(2); // Fallback for massive numbers
+    return (n / Math.pow(10, e * 3)).toFixed(1) + units[e-1];
 }
-
 
 function bigCrunch() {
+    // 1. Save the Archive and Universe level
+    const currentUni = state.uni + 1;
+    const currentArchive = [...state.archive];
+    const oldBtn = document.getElementById('rebirth-btn');
+    if (oldBtn) oldBtn.remove();
+    // 2. Reset the state to Initial, but carry over the prestige bonuses
+    state = JSON.parse(JSON.stringify(INITIAL_STATE));
+    state.uni = currentUni;
+    state.archive = currentArchive;
+    
+    // 3. Clear UI and re-initialize
+    document.getElementById('white-out').style.opacity = 1;
+    setTimeout(() => {
+        document.getElementById('white-out').style.opacity = 0;
+        renderUpgrades();
+        updateUI();
+        // Optional: Show a message about the new multiplier
+        alert(`Universe ${currentUni} created. Potential gain increased by ${Math.pow(2, currentUni - 1)}x!`);
+    }, 1000);
+}
+    
 
-    // 1. Save the Archive and Universe level
-
-    const currentUni = state.uni + 1;
-
-    const currentArchive = [...state.archive];
-
-    const oldBtn = document.getElementById('rebirth-btn');
-
-    if (oldBtn) oldBtn.remove();
-
-    // 2. Reset the state to Initial, but carry over the prestige bonuses
-
-    state = JSON.parse(JSON.stringify(INITIAL_STATE));
-
-    state.uni = currentUni;
-
-    state.archive = currentArchive;
-
-    
-
-    // 3. Clear UI and re-initialize
-
-    document.getElementById('white-out').style.opacity = 1;
-
-    setTimeout(() => {
-
-        document.getElementById('white-out').style.opacity = 0;
-
-        renderUpgrades();
-
-        updateUI();
-
-        // Optional: Show a message about the new multiplier
-
-        alert(`Universe ${currentUni} created. Potential gain increased by ${Math.pow(2, currentUni - 1)}x!`);
-
-    }, 1000);
-
+    function toggleModal(id) { 
+        const m = document.getElementById(id); 
+        m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; 
+        if(id === 'archive-modal') renderArchive(); 
+    }
+    
+    function renderUpgrades() { 
+    const r = (id, type) => { 
+        const container = document.getElementById(id);
+        const filteredUpgrades = state.upgrades[type].filter(u => state.stage >= u.era);
+        
+        container.innerHTML = filteredUpgrades.map((u) => {
+            const originalIndex = state.upgrades[type].indexOf(u);
+            
+            return `
+                <div class="upgrade-card">
+                    <div>
+                        <b>${u.name}</b><br>
+                        <small>Lvl ${u.count}</small>
+                    </div>
+                    <button onclick="buy('${type}', ${originalIndex})">
+                        ${formatNum(u.cost)}
+                    </button>
+                </div>`;
+        }).join(''); 
+    }; 
+    r('phys-upgrades', 'phys'); 
+    r('dna-upgrades', 'dna'); 
 }
 
-    
-
-
-    function toggleModal(id) { 
-
-        const m = document.getElementById(id); 
-
-        m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; 
-
-        if(id === 'archive-modal') renderArchive(); 
-
-    }
-
-    
-
-    function renderUpgrades() { 
-
-    const r = (id, type) => { 
-
-        // We map the original array first to keep the correct index, 
-
-        // then filter for display, or vice versa. 
-
-        // The most reliable way is to find the index of the object in the original state.
-
-        const container = document.getElementById(id);
-
-        const filteredUpgrades = state.upgrades[type].filter(u => state.stage >= u.era);
-
-        
-
-        container.innerHTML = filteredUpgrades.map((u) => {
-
-            // Find the true index in the original state array so buy() works correctly
-
-            const originalIndex = state.upgrades[type].indexOf(u);
-
-            const currency = u.currency || (type === 'phys' ? 'atp' : 'dna');
-
-            
-
-            return `
-
-                <div class="upgrade-card">
-
-                    <div>
-
-                        <b>${u.name}</b><br>
-
-                        <small>Lvl ${u.count}</small>
-
-                    </div>
-
-                    <button 
-
-                        data-cost="${u.cost}" 
-
-                        data-currency="${currency}" 
-
-                        onclick="buy('${type}', ${originalIndex})">
-
-                        ${formatNum(u.cost)}
-
-                    </button>
-
-                </div>`;
-
-        }).join(''); 
-
-    }; 
-
-    r('phys-upgrades', 'phys'); 
-
-    r('dna-upgrades', 'dna'); 
-
+    
+    function renderArchive() { 
+    document.getElementById('specimen-history').innerHTML = 
+        state.archive.map(i => 
+            `<div class="history-card" onclick="showScience(${i})" style="cursor: pointer; transition: background 0.2s;">
+                <b>${stages[i].emoji} ${stages[i].name}</b>
+            </div>`
+        ).join(''); 
 }
 
-
-    
-
-    function renderArchive() { 
-
-    document.getElementById('specimen-history').innerHTML = 
-
-        state.archive.map(i => 
-
-            `<div class="history-card" onclick="showScience(${i})" style="cursor: pointer; transition: background 0.2s;">
-
-                <b>${stages[i].emoji} ${stages[i].name}</b>
-
-            </div>`
-
-        ).join(''); 
-
-}
-
-
-    
-
-    function selectPath(p) { 
-
-        state.path = p; 
-
-        toggleModal('path-modal'); 
-
-        updateUI(); 
-
-    }
-
+    
+    function selectPath(p) { 
+        state.path = p; 
+        toggleModal('path-modal'); 
+        updateUI(); 
+    }
 function showScience(i) {
-
-    const s = stages[i];
-
-    document.getElementById('science-title').innerText = `${s.emoji} ${s.name}`;
-
-    document.getElementById('science-desc').innerText = s.scienceDesc;
-
-    toggleModal('science-modal');
-
+    const s = stages[i];
+    document.getElementById('science-title').innerText = `${s.emoji} ${s.name}`;
+    document.getElementById('science-desc').innerText = s.scienceDesc;
+    toggleModal('science-modal');
 }
+document.addEventListener('click', function(e) {
+    let btn = e.target.closest('button');
+    if (btn && !btn.disabled) {
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height) * 2.8; // Even bigger for visibility
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-    // Initialize
+        const ripple = document.createElement('div');
+        ripple.className = 'ripple';
+        ripple.style.setProperty('--ripple-x', x + 'px');
+        ripple.style.setProperty('--ripple-y', y + 'px');
+        ripple.style.setProperty('--ripple-size', size + 'px');
 
-    applyOfflineEarnings();
+        // Set ripple color from theme/path
+        let color = '#00ff88'; // default ATP green
+        if (btn.id === 'rebirth-btn') {
+            color = '#ffffff';
+        } else if (state?.path) {
+            color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${state.path}`).trim() || color;
+        }
+        ripple.style.setProperty('--ripple-color', color);
 
-    checkDyn(); 
-
-    renderUpgrades(); 
-
-    updateUI(); 
-
-    animate();
-
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 800);
+    }
+}, true);
+ // Initialize
+    applyOfflineEarnings();
+    checkDyn(); 
+    renderUpgrades(); 
+    updateUI(); 
+    animate();
 </script>
-
 </body>
-
 </html>
+
+Help me Make the upgrade buttons more interesting
