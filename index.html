@@ -501,6 +501,7 @@ const lib = {
 
 
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(INITIAL_STATE));
+    applyOfflineEarnings();
     let lastOfflineTime = Date.now();
 
     function transmute() {
@@ -617,18 +618,37 @@ function spawnFloaty(el, text, color) {
 
 
     function applyOfflineEarnings() {
-        const now = Date.now();
-        const elapsedSec = Math.floor((now - lastOfflineTime) / 1000);
-        if (elapsedSec > 0) {
-            const b = Math.pow(2, state.uni - 1);
-            const gainPerSec = state.atpRate * state.multi * b;
-            const earned = gainPerSec * elapsedSec;
-            state.atp += earned;
-            state.dna += state.dnaRate * b * elapsedSec;
-            state.total += earned;
+    const now = Date.now();
+    // Compare current time to the last time the game saved
+    const lastTick = state.lastTick || now; 
+    const elapsedSec = Math.floor((now - lastTick) / 1000);
+
+    if (elapsedSec > 5) { // Only trigger if away for more than 5 seconds
+        const b = Math.pow(2, state.uni - 1);
+        
+        // Calculate gains
+        const atpGain = (state.atpRate * state.multi * b) * elapsedSec;
+        const dnaGain = (state.dnaRate * b) * elapsedSec;
+
+        state.atp += atpGain;
+        state.dna += dnaGain;
+        state.total += atpGain;
+
+        // Visual feedback for the player
+        if (atpGain > 0 || dnaGain > 0) {
+            alert(`While you were gone for ${formatTime(elapsedSec)}, your universe evolved:\n\n+ ${formatNum(atpGain)} Potential\n+ ${formatNum(dnaGain)} Structure`);
         }
-        lastOfflineTime = now;
     }
+    state.lastTick = now; // Reset the tick to now
+}
+
+// Helper to make the alert look nice
+function formatTime(s) {
+    if (s < 60) return s + "s";
+    if (s < 3600) return Math.floor(s/60) + "m " + (s%60) + "s";
+    return Math.floor(s/3600) + "h " + Math.floor((s%3600)/60) + "m";
+}
+
 
     function updateUI() {
         const b = Math.pow(2, state.uni - 1);
@@ -713,6 +733,10 @@ function spawnFloaty(el, text, color) {
         }
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        // Add this line inside the updateUI function, right after the localStorage.setItem
+state.lastTick = Date.now(); 
+localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
     }  // ← This correctly closes the updateUI() function
 
 
