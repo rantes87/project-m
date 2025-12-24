@@ -1,372 +1,350 @@
 <!DOCTYPE html>
-
 <html lang="en" data-theme="dark">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Universal Evolution: Master Build</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root[data-theme="dark"] {
+            --atp-color: #00ff88; --atp-glow: rgba(0, 255, 136, 0.4);
+            --dna-color: #bc13fe; --dna-glow: rgba(188, 19, 254, 0.4);
+            --danger-color: #ff3860; --bg-color: #050508;
+            --panel-bg: rgba(12, 12, 20, 0.96);
+            --panel-border: 1px solid rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff; --text-secondary: #8899aa;
+            --combo-low: #00ff88; --combo-mid: #f1c40f; --combo-high: #ff3860;
+            --path-pred: #ff3860; --path-soc: #00d1ff;
+        }
 
-    <meta charset="UTF-8">
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-primary); 
+            margin: 0; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        #entropy-filter { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
+        #white-out { position: fixed; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
 
-    <title>Universal Evolution: Master Build</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-
-    <style>
-
-        :root[data-theme="dark"] {
-
-            --atp-color: #00ff88; --atp-glow: rgba(0, 255, 136, 0.4);
-
-            --dna-color: #bc13fe; --dna-glow: rgba(188, 19, 254, 0.4);
-
-            --danger-color: #ff3860; --bg-color: #050508;
-
-            --panel-bg: rgba(12, 12, 20, 0.96);
-
-            --panel-border: 1px solid rgba(255, 255, 255, 0.1);
-
-            --text-primary: #ffffff; --text-secondary: #8899aa;
-
-            --combo-low: #00ff88; --combo-mid: #f1c40f; --combo-high: #ff3860;
-
-            --path-pred: #ff3860; --path-soc: #00d1ff;
-
-        }
-
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-
-        
-
-        body { 
-
-            font-family: 'Roboto', sans-serif; 
-
-            background: var(--bg-color); 
-
-            color: var(--text-primary); 
-
-            margin: 0; 
-
-            min-height: 100vh;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            overflow-x: hidden;
-
-        }
-
-
-        #entropy-filter { position: fixed; inset: 0; background: black; opacity: 0; pointer-events: none; z-index: 8000; transition: opacity 1s; }
-
-        #white-out { position: fixed; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
-
-
-        .reveal-target { transition: opacity 0.8s ease, transform 0.8s ease; }
-
+        .reveal-target { transition: opacity 0.8s ease, transform 0.8s ease; }
 .history-card:hover {
+    background: rgba(0, 255, 136, 0.1) !important;
+    border-color: var(--atp-color) !important;
+    transform: scale(1.02);
+    transition: all 0.2s;
+}
+        /* --- LAYOUT GRID --- */
+        #game-wrapper { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1800px;
+            padding: 20px;
+            padding-top: 100px;
+            gap: 20px;
+            flex-grow: 1;
+        }
 
-    background: rgba(0, 255, 136, 0.1) !important;
+        @media (min-width: 1200px) {
+            #game-wrapper {
+                display: grid;
+                grid-template-columns: 350px 1fr 350px;
+                height: 100vh;
+                padding-top: 110px;
+                overflow: hidden;
+                align-items: start;
+            }
+            #panels-container { display: contents; }
+            .panel { height: 78vh !important; }
+        }
 
-    border-color: var(--atp-color) !important;
+        /* Mobile Swipe Container */
+        @media (max-width: 1199px) {
+            #panels-container {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                width: 100vw;
+                padding: 10px 20px 40px;
+                gap: 20px;
+            }
+            .panel {
+                min-width: 88vw;
+                scroll-snap-align: center;
+                height: 480px;
+            }
+        }
 
-    transform: scale(1.02);
+        .panel { background: var(--panel-bg); border-radius: 24px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
+        .panel-header { font-family: 'Orbitron'; font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 2px;}
 
-    transition: all 0.2s;
+        /* HUD & STABILITY */
+        .resource-hud { 
+            background: var(--panel-bg); padding: 15px 30px; border-radius: 50px; border: var(--panel-border); 
+            display: flex; justify-content: space-around; align-items: center; gap: 20px; width: 100%; max-width: 650px;
+        }
+        .res-box { width: 180px; text-align: center; flex-shrink: 0; }
+        .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.6em; white-space: nowrap; filter: drop-shadow(0 0 8px currentColor); }
 
+        @media (max-width: 600px) {
+            .res-box { width: auto; flex: 1; }
+            .res-val { font-size: 1.2em; }
+            .resource-hud { padding: 10px 18px; gap: 10px; }
+        }
+/* Add to <style> - Universal Button Ripple & Active Effects */
+button {
+    position: relative;
 }
 
-        /* --- LAYOUT GRID --- */
-
-        #game-wrapper { 
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            width: 100%;
-
-            max-width: 1800px;
-
-            padding: 20px;
-
-            padding-top: 100px;
-
-            gap: 20px;
-
-            flex-grow: 1;
-
-        }
-
-
-        @media (min-width: 1200px) {
-
-            #game-wrapper {
-
-                display: grid;
-
-                grid-template-columns: 350px 1fr 350px;
-
-                height: 100vh;
-
-                padding-top: 110px;
-
-                overflow: hidden;
-
-                align-items: start;
-
-            }
-
-            #panels-container { display: contents; }
-
-            .panel { height: 78vh !important; }
-
-        }
-
-
-        /* Mobile Swipe Container */
-
-        @media (max-width: 1199px) {
-
-            #panels-container {
-
-                display: flex;
-
-                overflow-x: auto;
-
-                scroll-snap-type: x mandatory;
-
-                width: 100vw;
-
-                padding: 10px 20px 40px;
-
-                gap: 20px;
-
-            }
-
-            .panel {
-
-                min-width: 88vw;
-
-                scroll-snap-align: center;
-
-                height: 480px;
-
-            }
-
-        }
-
-
-        .panel { background: var(--panel-bg); border-radius: 24px; border: var(--panel-border); padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
-
-        .panel-header { font-family: 'Orbitron'; font-size: 0.8em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 15px; text-transform: uppercase; color: var(--atp-color); letter-spacing: 2px;}
-
-
-        /* HUD & STABILITY */
-
-        .resource-hud { 
-
-            background: var(--panel-bg); padding: 15px 30px; border-radius: 50px; border: var(--panel-border); 
-
-            display: flex; justify-content: space-around; align-items: center; gap: 20px; width: 100%; max-width: 650px;
-
-        }
-
-        .res-box { width: 180px; text-align: center; flex-shrink: 0; }
-
-        .res-val { font-family: 'Orbitron'; font-weight: 700; font-size: 1.6em; white-space: nowrap; filter: drop-shadow(0 0 8px currentColor); }
-
-
-        @media (max-width: 600px) {
-
-            .res-box { width: auto; flex: 1; }
-
-            .res-val { font-size: 1.2em; }
-
-            .resource-hud { padding: 10px 18px; gap: 10px; }
-
-        }
-
-
-        /* BUTTON BRIGHTENING ENGINE */
-
-        button { 
-
-            font-family: 'Orbitron'; font-size: 0.7em; padding: 10px 15px; border-radius: 8px; border: none; 
-
-            cursor: pointer; background: var(--atp-color); font-weight: bold; 
-
-            transition: all 0.3s ease;
-
-            filter: grayscale(1) opacity(0.25);
-
-        }
-
-        button:not(:disabled) { 
-
-            filter: grayscale(0) opacity(1); 
-
-            box-shadow: 0 0 15px var(--atp-glow);
-
-        }
-
-        
-
-        #transmute-btn { 
-
-            width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--dna-color); 
-
-            background: rgba(188, 19, 254, 0.1); color: var(--dna-color); font-size: 1.2em;
-
-            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;
-
-            filter: grayscale(1) opacity(0.25);
-
-        }
-
-        #transmute-btn:not(:disabled) { 
-
-            background: var(--dna-color); color: #fff; 
-
-            box-shadow: 0 0 15px var(--dna-glow); 
-
-            filter: grayscale(0) opacity(1);
-
-        }
-
-
-        /* SPECIMEN DISPLAY & FIXED HALO */
-
-        .main-display { display: flex; flex-direction: column; align-items: center; width: 100%; }
-
-        #specimen-wrapper {
-
-            position: relative;
-
-            width: 260px; height: 260px;
-
-            margin: 30px 0;
-
-            display: flex; justify-content: center; align-items: center;
-
-            z-index: 5;
-
-        }
-
-        #specimen-container { 
-
-            width: 100%; height: 100%;
-
-            display: flex; justify-content: center; align-items: center; 
-
-            border-radius: 50%; border: 2px solid var(--atp-color); 
-
-            box-shadow: 0 0 40px var(--atp-glow);
-
-            transition: border-color 0.5s, box-shadow 0.5s;
-
-            z-index: 5; 
-
-            will-change: transform;
-
-        }
-
-        #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
-
-        #specimen:active { transform: scale(0.92); }
-
-        #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
-
-
-        #resonance-halo { 
-
-            position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; 
-
-            opacity: 0; transition: opacity 0.4s; background: rgba(0,0,0,0.85); 
-
-            padding: 6px 16px; border-radius: 30px; border: 2px solid var(--atp-color); 
-
-            z-index: 20; pointer-events: none; white-space: nowrap; font-size: 0.7em;
-
-        }
-
-        #resonance-halo.active { opacity: 1; }
-
-
-        .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: var(--panel-border); z-index: 1000; }
-
-        .bunny-link { font-size: 2em; text-decoration: none; display: none; animation: bunnyPulse 2s infinite ease-in-out; margin-left: 15px; cursor: pointer; }
-
-
-        .upgrade-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--atp-color); }
-
-        .ripple { position: absolute; border: 2px solid var(--atp-color); border-radius: 50%; pointer-events: none; animation: ripple 0.6s ease-out forwards; }
-
-        @keyframes ripple { from { width: 0; height: 0; opacity: 1; } to { width: 300px; height: 300px; opacity: 0; } }
-
-        #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: 0.4s; }
-
-        
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 20px; }
-
-        .modal-content { max-width: 800px; width: 100%; background: #111; padding: 30px; border-radius: 24px; border: 1px solid var(--atp-color); text-align: center; }
-
-        .hidden-panel { opacity: 0 !important; pointer-events: none !important; }
-
-        
-
-        #specimen-history { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 50vh; overflow-y: auto; padding: 10px; margin-top: 20px; }
-
-        .history-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; font-size: 0.8em; border: 1px solid rgba(255,255,255,0.1); }
-
-    </style>
-
+button:active:not(:disabled) {
+    transform: scale(0.95) !important;
+    transition: transform 0.1s ease, filter 0.1s ease;
+    filter: brightness(1.3) drop-shadow(0 0 20px currentColor) !important;
+}
+
+/* Ultra-Smooth Ripple - Now Visible & Themed */
+/* FINAL Ultra-Smooth & Visible Ripple */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--ripple-color, #00ff88) 0%, transparent 70%);
+    pointer-events: none;
+    left: var(--ripple-x);
+    top: var(--ripple-y);
+    width: var(--ripple-size);
+    height: var(--ripple-size);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+    animation: ripple-final 0.8s cubic-bezier(0, 0, 0.2, 1) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes ripple-final {
+    to {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+        /* BUTTON BRIGHTENING ENGINE */
+        button { 
+            font-family: 'Orbitron'; font-size: 0.7em; padding: 10px 15px; border-radius: 8px; border: none; 
+            cursor: pointer; background: var(--atp-color); font-weight: bold; 
+            transition: all 0.3s ease;
+            filter: grayscale(1) opacity(0.25);
+        }
+        button:not(:disabled) { 
+            filter: grayscale(0) opacity(1); 
+            box-shadow: 0 0 15px var(--atp-glow);
+        }
+        
+        #transmute-btn { 
+            width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--dna-color); 
+            background: rgba(188, 19, 254, 0.1); color: var(--dna-color); font-size: 1.2em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;
+            filter: grayscale(1) opacity(0.25);
+        }
+        #transmute-btn:not(:disabled) { 
+            background: var(--dna-color); color: #fff; 
+            box-shadow: 0 0 15px var(--dna-glow); 
+            filter: grayscale(0) opacity(1);
+        }
+
+        /* SPECIMEN DISPLAY & FIXED HALO */
+        .main-display { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        #specimen-wrapper {
+            position: relative;
+            width: 260px; height: 260px;
+            margin: 30px 0;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 5;
+        }
+        #specimen-container { 
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center; 
+            border-radius: 50%; border: 2px solid var(--atp-color); 
+            box-shadow: 0 0 40px var(--atp-glow);
+            transition: border-color 0.5s, box-shadow 0.5s;
+            z-index: 5; 
+            will-change: transform;
+        }
+        #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
+        #specimen:active { transform: scale(0.92); }
+        #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
+
+        #resonance-halo { 
+            position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-family: 'Orbitron'; 
+            opacity: 0; transition: opacity 0.4s; background: rgba(0,0,0,0.85); 
+            padding: 6px 16px; border-radius: 30px; border: 2px solid var(--atp-color); 
+            z-index: 20; pointer-events: none; white-space: nowrap; font-size: 0.7em;
+        }
+        #resonance-halo.active { opacity: 1; }
+
+        .top-bar { position: fixed; top:0; left:0; width:100%; height:80px; background: var(--panel-bg); display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: var(--panel-border); z-index: 1000; }
+        .bunny-link { font-size: 2em; text-decoration: none; display: none; animation: bunnyPulse 2s infinite ease-in-out; margin-left: 15px; cursor: pointer; }
+
+        .upgrade-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--atp-color); }
+        #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--atp-color), var(--dna-color)); transition: 0.4s; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 20px; }
+        .modal-content { max-width: 800px; width: 100%; background: #111; padding: 30px; border-radius: 24px; border: 1px solid var(--atp-color); text-align: center; }
+        .hidden-panel { opacity: 0 !important; pointer-events: none !important; }
+        
+        #specimen-history { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 50vh; overflow-y: auto; padding: 10px; margin-top: 20px; }
+        .history-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; font-size: 0.8em; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
 </head>
-
 <body>
-
 
 <div id="entropy-filter"></div><div id="white-out"></div>
 
-
 <div class="top-bar reveal-target">
-
-    <div style="display:flex; align-items: center;">
-
-        <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing: 1px;">UNI: <span id="uni-val" style="color:gold">1</span> | ERA: <span id="era-val">VOID</span></div>
-
-        <a href="https://swift4prez.com" target="_blank" class="bunny-link" id="celestial-bunny">🐰</a>
-
-    </div>
-
-    <div style="display:flex; gap:10px;">
-
-        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.6em; padding: 6px 12px; filter:none; opacity:1;">ARC</button>
-
-        <button onclick="confirmTotalReset()" style="background:none; border:1px solid var(--danger-color); color:var(--danger-color); font-size:0.6em; padding: 6px 12px; filter:none; opacity:0.8;">RES</button>
-
-    </div>
-
+    <div style="display:flex; align-items: center;">
+        <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing: 1px;">UNI: <span id="uni-val" style="color:gold">1</span> | ERA: <span id="era-val">VOID</span></div>
+        <a href="https://swift4prez.com" target="_blank" class="bunny-link" id="celestial-bunny">🐰</a>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="toggleModal('archive-modal')" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.6em; padding: 6px 12px; filter:none; opacity:1;">ARC</button>
+        <button onclick="confirmTotalReset()" style="background:none; border:1px solid var(--danger-color); color:var(--danger-color); font-size:0.6em; padding: 6px 12px; filter:none; opacity:0.8;">RES</button>
+    </div>
 </div>
 
-
 <div id="game-wrapper">
+    <div class="main-display">
+        <div class="resource-hud reveal-target">
+            <div class="res-box">
+                <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
+                <div id="atp-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">POTENTIAL</div>
+                <div id="atp-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
+            </div>
+            <button id="transmute-btn" onclick="transmute()" title="Convert Energy to Structure">⇄</button>
+            <div class="res-box">
+                <div class="res-val" id="dna-display" style="color:var(--dna-color)">0</div>
+                <div id="dna-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">STRUCTURE</div>
+                <div id="dna-ps" style="font-size:0.65em; opacity: 0.5;">+0/s</div>
+            </div>
+        </div>
 
-    <div class="main-display">
+        <div id="specimen-wrapper">
+            <div id="resonance-halo"><span id="combo-val">x1.0</span></div>
+            <div id="specimen-container">
+                <div id="specimen" class="singularity" onclick="handleClick()">●</div>
+            </div>
+        </div>
 
-        <div class="resource-hud reveal-target">
+        <div style="text-align:center; width: 100%; max-width: 500px;">
+            <h2 id="stage-name" class="reveal-target" style="font-family:'Orbitron'; margin:0; font-size:1.3em;">Singularity</h2>
+            <div style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px; margin:15px 0; overflow:hidden;"><div id="progress-fill"></div></div>
+            <div id="progress-stats" class="reveal-target" style="font-family:'Orbitron'; font-size:0.6em; opacity:0.6;">0 / 500</div>
+            <p id="stage-desc" class="reveal-target" style="font-size:0.8em; font-style:italic; margin-top:10px; opacity:0.7;"></p>
+        </div>
+    </div>
 
-            <div class="res-box">
+    <div id="panels-container">
+        <div class="panel reveal-target" id="phys-panel">
+            <div class="panel-header">Physical Evolution</div>
+            <div id="phys-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
+        </div>
+        <div class="panel reveal-target hidden-panel" id="dna-panel">
+            <div class="panel-header" style="color:var(--dna-color)">Complexity Research</div>
+            <div id="dna-upgrades" style="overflow-y:auto; flex-grow:1;"></div>
+        </div>
+    </div>
+</div>
 
-                <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
+<div id="path-modal" class="modal"><div class="modal-content"><h2>CHOOSE PATH</h2><div style="display:flex; gap:15px; margin-top:20px;"><button onclick="selectPath('predatory')" style="background:var(--path-pred); filter:none; opacity:1; flex:1;">HUNTER</button><button onclick="selectPath('social')" style="background:var(--path-soc); filter:none; opacity:1; flex:1;">HIVE MIND</button></div></div></div>
+<div id="archive-modal" class="modal"><div class="modal-content"><h1>COSMIC ARCHIVE</h1><div id="specimen-history"></div><button onclick="toggleModal('archive-modal')" style="margin-top:20px; filter:none; opacity:1;">CLOSE</button></div></div>
+<div id="science-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px; text-align: left;">
+        <h2 id="science-title" style="font-family:'Orbitron'; color: var(--atp-color);"></h2>
+        <p id="science-desc" style="font-size: 1em; line-height: 1.6; opacity: 0.9; white-space: pre-wrap;"></p>
+        <button onclick="toggleModal('science-modal')" style="margin-top: 20px; filter: none; opacity: 1;">CLOSE</button>
+    </div>
+</div>
+<script>
+    // --- CORE LOGIC ---
+    const STORAGE_KEY = 'universal_master_v9';
+    function confirmTotalReset() {
+        if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
+            performTotalReset();
+        }
+    }
+
+    function performTotalReset() {
+        // Remove saved data
+        localStorage.removeItem(STORAGE_KEY);
+        
+        // Remove any lingering Big Crunch button
+        const oldBtn = document.getElementById('rebirth-btn');
+        if (oldBtn) oldBtn.remove();
+        
+        // Full white-out transition
+        document.getElementById('white-out').style.opacity = 1;
+        
+        setTimeout(() => {
+            // Reset state completely
+            state = JSON.parse(JSON.stringify(INITIAL_STATE));
+            
+            // Re-initialize everything
+            renderUpgrades();
+            updateUI();
+            document.getElementById('white-out').style.opacity = 0;
+            
+            alert("Total reset complete.\nWelcome back to the Void. ●");
+        }, 1000);
+    }const INITIAL_STATE = {
+        uni: 1, atp: 0, dna: 0, total: 0, stage: 0, atpRate: 0, dnaRate: 0, multi: 1, click: 1,
+        combo: 1, lastClick: Date.now(), entropy: 0, path: null, 
+        archive: [], currentRotation: 0, clickSpinVelocity: 0,
+        upgrades: {
+            phys: [
+                { id: 'p1', name: "Singularity Force", cost: 10, addClick: 1, count: 0, era: 0 },
+                { id: 'p2', name: "Quantum Spark", cost: 80, r: 5, count: 0, era: 1 },
+                { id: 'p3', name: "Atomic Bonding", cost: 1000, r: 50, count: 0, era: 2 }
+            ],
+            dna: [
+                { id: 'd1', name: "Data Streams", cost: 200000, r: 100, count: 0, era: 5, currency: 'atp' },
+                { id: 'd2', name: "Neural Logic", cost: 1000, m: 3.5, count: 0, era: 7 }
+            ]
+        }
+    };
+
+    const stages = [
+    // --- PHYSICAL/CHEMICAL ---
+    { name: "Singularity", emoji: "●", goal: 500, era: "VOID", desc: "Infinite density.", scienceDesc: "A point of infinite density where spacetime curvature diverges, theorized as the Big Bang origin." },
+    { name: "Subatomic Particle", emoji: "🔘", goal: 5000, era: "QUANTUM", desc: "Quarks emerge.", scienceDesc: "Quarks and leptons form in quark-gluon plasma ~10⁻⁶ seconds post-Big Bang, bound by strong force." },
+    { name: "Atom", emoji: "⚛️", goal: 50000, era: "ATOMIC", desc: "Matter cools.", scienceDesc: "Electrons bind to nuclei ~380,000 years post-Big Bang, forming neutral atoms during recombination." },
+    { name: "Molecule", emoji: "🧪", goal: 500000, era: "MOLECULAR", desc: "Bonds form.", scienceDesc: "First H₂ molecules form via radiative association as universe cools further." },
+    { name: "Organic Compound", emoji: "💎", goal: 2000000, era: "CHEMICAL", desc: "Pre-life soup.", scienceDesc: "Carbon-based molecules like amino acids arise in primordial soup via hydrothermal vents or meteorites." },
+    
+    // --- BIOLOGICAL ---
+    { name: "Genetic Code", emoji: "🌀", goal: 10000000, era: "GENETIC", desc: "Information encoded.", scienceDesc: "DNA/RNA triplet codons translate nucleotides to amino acids, evolved from RNA world hypothesis." },
+    { name: "Eukaryote", emoji: "🦠", goal: 50000000, era: "CELLULAR", desc: "Complex internal structures.", scienceDesc: "Nucleus and organelles via endosymbiosis of bacteria ~2 billion years ago." },
+    { name: "Multicellular", emoji: "🧫", goal: 250000000, era: "BIOLOGICAL", desc: "Specialized cell colonies.", scienceDesc: "Cell adhesion and signaling enable specialization ~1 billion years ago." },
+    { name: "Aquatic Life", emoji: "🐟", goal: 1000000000, era: "AQUATIC", desc: "The oceans teem.", scienceDesc: "Cambrian explosion: diverse vertebrates with gills and fins ~540 million years ago." },
+    { name: "Terrestrial", emoji: "🦎", goal: 5000000000, era: "LAND", desc: "Walking on dry land.", scienceDesc: "Tetrapods evolve lungs and limbs ~400 million years ago for land colonization." },
+    { name: "Primate", emoji: "🐒", goal: 25000000000, era: "PRIMATE", desc: "Social grooming and tools.", scienceDesc: "Arboreal mammals with stereoscopic vision and grasping hands ~65 million years ago." },
+    
+    // --- CONSCIOUS/TECHNOLOGICAL ---
+    { name: "Sapiens", emoji: "🧠", goal: 100000000000, era: "SAPIENT", desc: "Awareness of self.", scienceDesc: "Homo sapiens: 1,350 cm³ brain enables symbolic thought ~300,000 years ago." },
+    { name: "Linguistic", emoji: "🗣️", goal: 500000000000, era: "CULTURAL", desc: "Sharing myths and knowledge.", scienceDesc: "Complex syntax and recursion evolve ~50,000 years ago for abstract communication." },
+    { name: "Industrial", emoji: "⚙️", goal: 2500000000000, era: "INDUSTRIAL", desc: "The era of machines.", scienceDesc: "Steam engines apply thermodynamics for mechanized production from 1760s." },
+    { name: "Digital", emoji: "💻", goal: 10000000000000, era: "DIGITAL", desc: "The world, networked.", scienceDesc: "Transistors enable binary computing and global internet ~1940s onward." },
+    
+    // --- TRANSCENDENCE ---
+    { name: "Post-Human", emoji: "🧬", goal: 50000000000000, era: "CYBORG", desc: "Merging biology with silicon.", scienceDesc: "CRISPR and neural implants enhance humans beyond natural evolution." },
+    { name: "Singularity Mind", emoji: "🌐", goal: 250000000000000, era: "AI", desc: "Consciousness without limits.", scienceDesc: "AI surpasses human intelligence, triggering recursive self-improvement (Kurzweil ~2045)." },
+    { name: "Dyson Swarm", emoji: "☀️", goal: 1000000000000000, era: "GALACTIC", desc: "Harnessing the stars.", scienceDesc: "Orbital satellites capture 100% stellar output, Kardashev Type II civilization." },
+    { name: "Omega Point", emoji: "👁️", goal: 5000000000000000, era: "TRANSCENDENT", desc: "The universe becomes aware.", scienceDesc: "Teilhard de Chardin: ultimate complexity converges matter and consciousness." },
+    { name: "Unive           <div class="res-val" id="atp-display" style="color:var(--atp-color)">0</div>
 
                 <div id="atp-label" style="font-size:0.55em; font-family:'Orbitron'; opacity: 0.8; letter-spacing: 1px;">POTENTIAL</div>
 
