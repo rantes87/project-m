@@ -105,6 +105,72 @@ button {
     position: relative;
 }
 
+/* Ensure the card can scale without overlapping others weirdly */
+.upgrade-card {
+    position: relative;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+    will-change: transform;
+}
+
+/* The "Pop" Animation */
+@keyframes upgrade-flash {
+    0% { 
+        transform: scale(1); 
+        background: rgba(255, 255, 255, 0.4); 
+        box-shadow: 0 0 0px #fff;
+        z-index: 10;
+    }
+    20% { 
+        transform: scale(1.08); /* The Pop */
+        background: rgba(255, 255, 255, 0.2); 
+        box-shadow: 0 0 25px var(--atp-glow);
+    }
+    100% { 
+        transform: scale(1); 
+        background: rgba(255, 255, 255, 0.03); 
+        box-shadow: 0 0 0px transparent;
+        z-index: 1;
+    }
+}
+
+.upgrade-purchased {
+    animation: upgrade-flash 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
+}
+
+/* Make buttons look more interactive on hover */
+.upgrade-card button:not(:disabled):hover {
+    transform: scale(1.05);
+    background: var(--atp-color);
+    color: #000;
+}
+        
+            /* Enhanced Pop Animation */
+@keyframes upgrade-flash {
+    0% { transform: scale(1); background: rgba(255, 255, 255, 0.4); z-index: 10; }
+    30% { transform: scale(1.1); background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 30px var(--atp-glow); }
+    100% { transform: scale(1); background: rgba(255, 255, 255, 0.03); z-index: 1; }
+}
+
+.upgrade-purchased {
+    animation: upgrade-flash 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both !important;
+}
+
+/* Floating Gain Text */
+@keyframes floatUp {
+    0% { transform: translate(-50%, 0); opacity: 1; }
+    100% { transform: translate(-50%, -60px); opacity: 0; }
+}
+
+.floaty-text {
+    position: fixed;
+    font-family: 'Orbitron';
+    font-size: 0.8em;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 10000;
+    text-shadow: 0 0 10px currentColor;
+    animation: floatUp 0.8s ease-out forwards;
+    }
 button:active:not(:disabled) {
     transform: scale(0.95) !important;
     transition: transform 0.1s ease, filter 0.1s ease;
@@ -466,23 +532,23 @@ const lib = {
         setTimeout(() => r.remove(), 800);
         updateUI();
     }
-
-    function buy(type, i) {
+function buy(type, i) {
     const u = state.upgrades[type][i];
     const cur = u.currency || (type === 'phys' ? 'atp' : 'dna');
     
     if (state[cur] >= u.cost) {
+        // 1. Deduct Currency
         state[cur] -= u.cost;
         u.count++;
-        
-        // --- ADD THIS EFFECT LOGIC ---
-        const card = document.getElementById(`card-${u.id}`);
-        if (card) {
-            card.classList.add('upgrade-purchased');
-            setTimeout(() => card.classList.remove('upgrade-purchased'), 400);
-        }
-        // -----------------------------
 
+        // 2. Determine the gain text and color for the Floaty
+        const boostText = u.r ? `+${formatNum(u.r)}/s` : 
+                          u.m ? `x${u.m} POWER` : 
+                          u.addClick ? `+${formatNum(u.addClick)} CLICK` : 'EVOLVED';
+        
+        const themeColor = type === 'phys' ? 'var(--atp-color)' : 'var(--dna-color)';
+
+        // 3. Apply the actual stat boosts
         if (u.r) {
             if (type === 'phys') state.atpRate += u.r;
             else state.dnaRate += u.r;
@@ -490,11 +556,48 @@ const lib = {
         if (u.m) state.multi *= u.m;
         if (u.addClick) state.click += u.addClick;
         
+        // 4. Increase cost for next purchase
         u.cost = Math.floor(u.cost * 1.6);
+
+        // 5. Re-render the UI so the new costs/levels show immediately
         renderUpgrades();
         updateUI();
+
+        // 6. Visual Effects: The "Pop" and the "Floaty"
+        // We find the elements AFTER rendering so we have the fresh DOM nodes
+        const card = document.getElementById(`card-${u.id}`);
+        const btn = document.getElementById(`btn-${u.id}`);
+
+        if (card && btn) {
+            // Restart the "Pop" animation (removes and re-adds class)
+            card.classList.remove('upgrade-purchased');
+            void card.offsetWidth; // This "Magic Line" forces the browser to reset the animation
+            card.classList.add('upgrade-purchased');
+            
+            // Trigger the floating text gain
+            spawnFloaty(btn, boostText, themeColor);
+        }
     }
 }
+
+// Helper function to handle the floating text physics
+function spawnFloaty(el, text, color) {
+    const rect = el.getBoundingClientRect();
+    const floaty = document.createElement('div');
+    floaty.className = 'floaty-text';
+    floaty.innerText = text;
+    floaty.style.color = color;
+    
+    // Position it at the center of the button that was clicked
+    floaty.style.left = `${rect.left + rect.width / 2}px`;
+    floaty.style.top = `${rect.top}px`;
+    
+    document.body.appendChild(floaty);
+    
+    // Cleanup: Remove the element after the CSS animation finishes (800ms)
+    setTimeout(() => floaty.remove(), 800);
+}
+
 
 
 
@@ -660,6 +763,7 @@ function bigCrunch() {
         alert(`Universe ${currentUni} created. Potential gain increased by ${Math.pow(2, currentUni - 1)}x!`);
     }, 1000);
 }
+
     
 
     function toggleModal(id) { 
@@ -707,7 +811,32 @@ function bigCrunch() {
     r('dna-upgrades', 'dna'); 
 }
 
+function spawnFloaty(el, text) {
+    const rect = el.getBoundingClientRect();
+    const floaty = document.createElement('div');
+    floaty.innerText = text;
+    floaty.style.cssText = `
+        position: fixed;
+        left: ${rect.left + rect.width / 2}px;
+        top: ${rect.top}px;
+        color: var(--atp-color);
+        font-family: 'Orbitron';
+        font-weight: bold;
+        pointer-events: none;
+        z-index: 10000;
+        animation: floatUp 0.8s ease-out forwards;
+    `;
+    document.body.appendChild(floaty);
+    setTimeout(() => floaty.remove(), 800);
+}
 
+// Add this CSS for the floaty text
+/* @keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
+}
+*/
+    
     
     function renderArchive() { 
     document.getElementById('specimen-history').innerHTML = 
@@ -717,6 +846,8 @@ function bigCrunch() {
             </div>`
         ).join(''); 
 }
+
+
 
     
     function selectPath(p) { 
