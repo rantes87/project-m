@@ -120,14 +120,6 @@ button {
     will-change: transform;
 }
 
-/* The "Pop" Animation */
-/* Enhanced Pop Animation */
-@keyframes upgrade-flash {
-    0% { transform: scale(1); background: rgba(255, 255, 255, 0.4); z-index: 10; }
-    30% { transform: scale(1.1); background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 30px var(--atp-glow); }
-    100% { transform: scale(1); background: rgba(255, 255, 255, 0.03); z-index: 1; }
-}
-
 .upgrade-purchased {
     animation: upgrade-flash 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both !important;
 }
