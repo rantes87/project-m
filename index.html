@@ -356,24 +356,18 @@ button:active:not(:disabled) {
 const STORAGE_KEY = 'universal_master_v9';
 let state; // Don't initialize yet!
 
-// Initialization Function
 function initGame() {
-    // 1. Load data
     const saved = localStorage.getItem(STORAGE_KEY);
     state = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(INITIAL_STATE));
-
-    // 2. Calculate Offline Gains BEFORE the loop starts
-    applyOfflineEarnings();
-
-    // 3. Setup UI
-    checkDyn(); 
-    renderUpgrades(); 
-    updateUI(); 
-
-    // 4. Start Loops
-    animate();
-    startMainLoop();
+    
+    applyOfflineEarnings(); // Step 1: Calculate gap
+    checkDyn();             // Step 2: Check for new unlocks
+    renderUpgrades();       // Step 3: Draw buttons
+    updateUI();             // Step 4: Show current resources
+    
+    setInterval(gameLoop, 100); // Step 5: Start the heart beat
 }
+
 
     function confirmTotalReset() {
         if (confirm("⚠️ TOTAL RESET ⚠️\n\nThis will erase EVERYTHING:\n• All progress\n• All universes\n• Cosmic Archive\n• Upgrades and paths\n\nAre you ABSOLUTELY sure? This cannot be undone.")) {
