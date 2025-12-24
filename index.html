@@ -112,6 +112,7 @@ button:active:not(:disabled) {
 }
 
 /* Ultra-Smooth Ripple - Now Visible & Themed */
+/* FINAL Ultra-Smooth & Visible Ripple */
 .ripple {
     position: absolute;
     border-radius: 50%;
@@ -122,20 +123,14 @@ button:active:not(:disabled) {
     width: var(--ripple-size);
     height: var(--ripple-size);
     transform: translate(-50%, -50%) scale(0);
-    animation: ripple-smooth 0.8s cubic-bezier(0, 0, 0.2, 1) forwards;
+    opacity: 0.8;
+    animation: ripple-final 0.8s cubic-bezier(0, 0, 0.2, 1) forwards;
     will-change: transform, opacity;
 }
 
-@keyframes ripple-smooth {
-    0% {
-        transform: translate(-50%, -50%) scale(0);
-        opacity: 0.8;
-    }
-    70% {
-        opacity: 0.6;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(1.1);
+@keyframes ripple-final {
+    to {
+        transform: translate(-50%, -50%) scale(2);
         opacity: 0;
     }
 }
@@ -684,7 +679,7 @@ document.addEventListener('click', function(e) {
     let btn = e.target.closest('button');
     if (btn && !btn.disabled) {
         const rect = btn.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height) * 2.4;
+        const size = Math.max(rect.width, rect.height) * 2.8; // Even bigger for visibility
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
@@ -694,14 +689,12 @@ document.addEventListener('click', function(e) {
         ripple.style.setProperty('--ripple-y', y + 'px');
         ripple.style.setProperty('--ripple-size', size + 'px');
 
-        // Determine ripple color
-        let color;
+        // Set ripple color from theme/path
+        let color = '#00ff88'; // default ATP green
         if (btn.id === 'rebirth-btn') {
             color = '#ffffff';
-        } else if (state && state.path) {
-            color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${state.path}`).trim();
-        } else {
-            color = getComputedStyle(document.documentElement).getPropertyValue('--atp-color').trim();
+        } else if (state?.path) {
+            color = getComputedStyle(document.documentElement).getPropertyValue(`--path-${state.path}`).trim() || color;
         }
         ripple.style.setProperty('--ripple-color', color);
 
