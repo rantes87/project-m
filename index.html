@@ -103,7 +103,6 @@
 /* Add to <style> - Universal Button Ripple & Active Effects */
 button {
     position: relative;
-    overflow: hidden;
 }
 
 button:active:not(:disabled) {
@@ -115,33 +114,30 @@ button:active:not(:disabled) {
 /* Updated: Ultra-Smooth Ripple with GPU Acceleration */
 .ripple {
     position: absolute;
-    border: 2px solid;
     border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3); /* Soft fill for visibility */
+    border: 2px solid transparent; /* Remove solid border, use background for smoother look */
     pointer-events: none;
-    width: var(--ripple-size, 300px);
-    height: var(--ripple-size, 300px);
-    left: var(--ripple-x, 50%);
-    top: var(--ripple-y, 50%);
+    left: var(--ripple-x);
+    top: var(--ripple-y);
+    width: var(--ripple-size);
+    height: var(--ripple-size);
     transform: translate(-50%, -50%) scale(0);
-    opacity: 0.8;
-    animation: ripple-smooth 0.7s cubic-bezier(0.0, 0, 0.2, 1) forwards;
-    filter: blur(0.5px); /* Subtle blur for premium feel */
+    animation: ripple-smooth 0.8s cubic-bezier(0, 0, 0.2, 1) forwards;
+    will-change: transform, opacity;
 }
 
 @keyframes ripple-smooth {
     0% {
         transform: translate(-50%, -50%) scale(0);
-        opacity: 0.8;
-        filter: blur(0.5px);
-    }
-    50% {
         opacity: 0.6;
-        filter: blur(1px);
+    }
+    70% {
+        opacity: 0.4;
     }
     100% {
-        transform: translate(-50%, -50%) scale(1.2);
+        transform: translate(-50%, -50%) scale(1);
         opacity: 0;
-        filter: blur(2px);
     }
 }
         /* BUTTON BRIGHTENING ENGINE */
@@ -638,7 +634,13 @@ function bigCrunch() {
     }
     
     function renderUpgrades() { 
-    const r = (id, type) => { 
+    const r = document.createElement('div');
+r.className = 'ripple';
+r.style.setProperty('--ripple-size', '400px'); // Bigger for central orb
+const color = state.path ? `var(--path-${state.path})` : 'var(--atp-color)';
+r.style.borderColor = color;
+document.getElementById('specimen-container').appendChild(r);
+setTimeout(() => r.remove(), 700);
         // We map the original array first to keep the correct index, 
         // then filter for display, or vice versa. 
         // The most reliable way is to find the index of the object in the original state.
@@ -691,13 +693,11 @@ function showScience(i) {
     document.getElementById('science-desc').innerText = s.scienceDesc;
     toggleModal('science-modal');
 }
-   /* Add this JS at the end of <script>, before // Initialize */
 document.addEventListener('click', function(e) {
-/* Updated JS: Same as before, but with smoother defaults */
-document.addEventListener('click', function(e) {
-    if (e.target.tagName === 'BUTTON' && !e.target.disabled) {
-        const rect = e.target.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height) * 2; // Larger for better spread
+    let btn = e.target.closest('button');
+    if (btn && !btn.disabled) {
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height) * 2.2; // Bigger spread
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
@@ -707,19 +707,19 @@ document.addEventListener('click', function(e) {
         ripple.style.setProperty('--ripple-y', y + 'px');
         ripple.style.setProperty('--ripple-size', size + 'px');
 
-        // Match button/path colors dynamically
-        const computedStyle = getComputedStyle(e.target);
-        let color = computedStyle.backgroundColor;
-        if (color === 'rgba(0, 0, 0, 0)' || color === 'transparent' || color === 'rgba(0, 0, 0, 0)') {
-            // Fallback to CSS vars for paths/special buttons
-            color = getComputedStyle(document.documentElement).getPropertyValue(`--${e.target.id === 'rebirth-btn' ? 'danger' : 'atp'}-color`) || '#00ff88';
-        }
-        ripple.style.borderColor = color;
+        // Dynamic color - matches button background or path
+        const bg = window.getComputedStyle(btn).backgroundColor;
+        const isTrans = bg.includes('rgba(0, 0, 0, 0)') || bg === 'transparent';
+        const color = isTrans 
+            ? (btn.id === 'rebirth-btn' ? '#ffffff' : (state.path ? `var(--path-${state.path})` : 'var(--atp-color)'))
+            : bg;
+        ripple.style.background = color.replace(')', ', 0.3)').replace('rgb', 'rgba'); // Add transparency
 
-        e.target.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 700); // Match animation duration
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 800);
     }
-}, true);  // Use capture phase for dynamic buttons // Initialize
+}, true);
+ // Use capture phase for dynamic buttons // Initialize
     applyOfflineEarnings();
     checkDyn(); 
     renderUpgrades(); 
