@@ -690,27 +690,38 @@ function buy(type, i) {
 
     function animate() {
     const container = document.getElementById('specimen-container');
-    
-    // 1. Handle Rotation
-    let speed = 0.2 + ((state.combo - 1) * 0.3);
+    if (!container) return;
+
+    // --- 1. ROTATION LOGIC ---
+    // Base speed + combo bonus + burst from clicking
+    let rotationSpeed = 0.2 + ((state.combo - 1) * 0.3);
     if (state.clickSpinVelocity > 0.1) { 
-        speed += state.clickSpinVelocity; 
-        state.clickSpinVelocity *= 0.92; 
+        rotationSpeed += state.clickSpinVelocity; 
+        state.clickSpinVelocity *= 0.92; // Friction/Decay
     }
-    state.currentRotation = (state.currentRotation + speed) % 360;
+    state.currentRotation = (state.currentRotation + rotationSpeed) % 360;
 
-    // 2. Handle Dynamic Scaling
-    // Base scale starts at 1.0. 
-    // Adds 0.05 for every combo point (x2 combo = 1.05 scale)
-    // Adds 0.10 for every Universe level (Uni 2 = 1.1 scale)
-    const comboScale = (state.combo - 1) * 0.05;
-    const uniScale = (state.uni - 1) * 0.1;
-    const totalScale = 1 + comboScale + uniScale;
+    // --- 2. DYNAMIC SCALING ---
+    // baseScale: grows with combo (5% per point) and universe (10% per level)
+    const comboGrowth = (state.combo - 1) * 0.05;
+    const uniGrowth = (state.uni - 1) * 0.1;
+    const baseScale = 1 + comboGrowth + uniGrowth;
 
-    // 3. Apply both Rotation and Scale
-    container.style.transform = `rotate(${state.currentRotation}deg) scale(${totalScale})`;
-    const pulse = Math.sin(Date.now() / 500) * (state.combo * 0.02);
-    container.style.transform = `rotate(${state.currentRotation}deg) scale(${totalScale + pulse})`;
+    // --- 3. PULSE (BREATHING) EFFECT ---
+    // Frequency: Pulse gets faster as combo increases
+    const frequency = Date.now() / (800 - (state.combo * 20));
+    // Amplitude: Pulse gets slightly more violent at higher combos
+    const amplitude = 0.02 + (state.combo * 0.005);
+    const pulse = Math.sin(frequency) * amplitude;
+
+    // --- 4. APPLY TRANSFORMS ---
+    const finalScale = baseScale + pulse;
+    container.style.transform = `rotate(${state.currentRotation}deg) scale(${finalScale})`;
+
+    // --- 5. DYNAMIC GLOW (OPTIONAL BONUS) ---
+    // Makes the shadow grow/shrink with the pulse and combo
+    const glowSize = 30 + (state.combo * 10);
+    container.style.boxShadow = `0 0 ${glowSize}px var(--atp-glow)`;
 
     requestAnimationFrame(animate);
 }
