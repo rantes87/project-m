@@ -228,15 +228,17 @@ button {
             display: flex; justify-content: center; align-items: center;
             z-index: 5;
         }
-        #specimen-container { 
-            width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center; 
-            border-radius: 50%; border: 2px solid var(--atp-color); 
-            box-shadow: 0 0 40px var(--atp-glow);
-            transition: border-color 0.5s, box-shadow 0.5s;
-            z-index: 5; 
-            will-change: transform;
-        }
+/* Update your existing #specimen-container style */
+#specimen-container { 
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center; 
+    border-radius: 50%; border: 2px solid var(--atp-color); 
+    box-shadow: 0 0 40px var(--atp-glow);
+    transition: border-color 0.5s, box-shadow 0.5s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added transform transition */
+    z-index: 5; 
+    will-change: transform;
+}
+
         #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
         #specimen:active { transform: scale(0.92); }
         #specimen.singularity { font-size: 30px; text-shadow: 0 0 20px #fff; }
@@ -687,16 +689,31 @@ function buy(type, i) {
     }
 
     function animate() {
-        const container = document.getElementById('specimen-container');
-        let speed = 0.2 + ((state.combo - 1) * 0.3);
-        if (state.clickSpinVelocity > 0.1) { 
-            speed += state.clickSpinVelocity; 
-            state.clickSpinVelocity *= 0.92; 
-        }
-        state.currentRotation = (state.currentRotation + speed) % 360;
-        container.style.transform = `rotate(${state.currentRotation}deg)`;
-        requestAnimationFrame(animate);
+    const container = document.getElementById('specimen-container');
+    
+    // 1. Handle Rotation
+    let speed = 0.2 + ((state.combo - 1) * 0.3);
+    if (state.clickSpinVelocity > 0.1) { 
+        speed += state.clickSpinVelocity; 
+        state.clickSpinVelocity *= 0.92; 
     }
+    state.currentRotation = (state.currentRotation + speed) % 360;
+
+    // 2. Handle Dynamic Scaling
+    // Base scale starts at 1.0. 
+    // Adds 0.05 for every combo point (x2 combo = 1.05 scale)
+    // Adds 0.10 for every Universe level (Uni 2 = 1.1 scale)
+    const comboScale = (state.combo - 1) * 0.05;
+    const uniScale = (state.uni - 1) * 0.1;
+    const totalScale = 1 + comboScale + uniScale;
+
+    // 3. Apply both Rotation and Scale
+    container.style.transform = `rotate(${state.currentRotation}deg) scale(${totalScale})`;
+    const pulse = Math.sin(Date.now() / 500) * (state.combo * 0.02);
+    container.style.transform = `rotate(${state.currentRotation}deg) scale(${totalScale + pulse})`;
+
+    requestAnimationFrame(animate);
+}
 
 
 function formatNum(n) {
