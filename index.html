@@ -228,16 +228,18 @@ button {
             display: flex; justify-content: center; align-items: center;
             z-index: 5;
         }
-/* Update your existing #specimen-container style */
+/* Update this in your <style> section */
 #specimen-container { 
     width: 100%; height: 100%;
     display: flex; justify-content: center; align-items: center; 
     border-radius: 50%; border: 2px solid var(--atp-color); 
     box-shadow: 0 0 40px var(--atp-glow);
-    transition: border-color 0.5s, box-shadow 0.5s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added transform transition */
+    /* REMOVED 'transform' from this list to fix the spin */
+    transition: border-color 0.5s, box-shadow 0.5s; 
     z-index: 5; 
     will-change: transform;
 }
+
 
         #specimen { font-size: 90px; cursor: pointer; user-select: none; z-index: 6; transition: transform 0.1s; }
         #specimen:active { transform: scale(0.92); }
@@ -692,39 +694,31 @@ function buy(type, i) {
     const container = document.getElementById('specimen-container');
     if (!container) return;
 
-    // --- 1. ROTATION LOGIC ---
-    // Base speed + combo bonus + burst from clicking
-    let rotationSpeed = 0.2 + ((state.combo - 1) * 0.3);
+    // 1. ROTATION CALCULATION
+    // We add a tiny base spin (0.2) plus combo speed
+    let speed = 0.2 + ((state.combo - 1) * 0.5);
+    
+    // Add the "kick" from clicking
     if (state.clickSpinVelocity > 0.1) { 
-        rotationSpeed += state.clickSpinVelocity; 
-        state.clickSpinVelocity *= 0.92; // Friction/Decay
+        speed += state.clickSpinVelocity; 
+        state.clickSpinVelocity *= 0.92; // Gradually slow down the kick
     }
-    state.currentRotation = (state.currentRotation + rotationSpeed) % 360;
+    
+    // Increment the actual degree value
+    state.currentRotation = (state.currentRotation + speed) % 360;
 
-    // --- 2. DYNAMIC SCALING ---
-    // baseScale: grows with combo (5% per point) and universe (10% per level)
-    const comboGrowth = (state.combo - 1) * 0.05;
-    const uniGrowth = (state.uni - 1) * 0.1;
-    const baseScale = 1 + comboGrowth + uniGrowth;
-
-    // --- 3. PULSE (BREATHING) EFFECT ---
-    // Frequency: Pulse gets faster as combo increases
-    const frequency = Date.now() / (800 - (state.combo * 20));
-    // Amplitude: Pulse gets slightly more violent at higher combos
-    const amplitude = 0.02 + (state.combo * 0.005);
-    const pulse = Math.sin(frequency) * amplitude;
-
-    // --- 4. APPLY TRANSFORMS ---
+    // 2. SCALE & PULSE CALCULATION
+    const baseScale = 1 + ((state.combo - 1) * 0.05) + ((state.uni - 1) * 0.1);
+    const pulse = Math.sin(Date.now() / 400) * (0.02 + (state.combo * 0.005));
     const finalScale = baseScale + pulse;
-    container.style.transform = `rotate(${state.currentRotation}deg) scale(${finalScale})`;
 
-    // --- 5. DYNAMIC GLOW (OPTIONAL BONUS) ---
-    // Makes the shadow grow/shrink with the pulse and combo
-    const glowSize = 30 + (state.combo * 10);
-    container.style.boxShadow = `0 0 ${glowSize}px var(--atp-glow)`;
+    // 3. APPLY TO DOM
+    // IMPORTANT: Combine rotate and scale into ONE transform string
+    container.style.transform = `rotate(${state.currentRotation}deg) scale(${finalScale})`;
 
     requestAnimationFrame(animate);
 }
+
 
 
 function formatNum(n) {
