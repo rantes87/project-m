@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROJECT M | IMMUTABLE EXPERIMENT</title>
+    <title>PROJECT M | SOAP PROTOCOL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
         :root {
@@ -232,12 +232,12 @@
         <div class="modal-content">
             <h2 style="color: var(--danger);">⚠ SOCIAL EXPERIMENT WARNING</h2>
             <p style="text-align: left; line-height: 1.6;">
-                You are accessing <strong>ProjectM</strong>. By proceeding, you acknowledge:
+                You are accessing <strong>ProjectM (SOAP)</strong>. By proceeding, you acknowledge:
                 <br><br>
                 1. <strong>NO ADMINS:</strong> The contract is immutable. Code is Law.<br>
-                2. <strong>PERMANENT</strong> All transactions are final.<br>
-                3. <strong>HIGH RISK:</strong> In Crypto anything can happen.<br>
-                4. <strong>NOT INVESTMENT:</strong> This is an experiment.
+                2. <strong>PERMANENT:</strong> All transactions are final.<br>
+                3. <strong>HIGH RISK:</strong> You may lose your funds.<br>
+                4. <strong>NOT INVESTMENT:</strong> This is a game theory experiment.
             </p>
             <button class="btn-danger" onclick="acceptRisk()">I ACCEPT THE RISKS</button>
         </div>
@@ -246,7 +246,7 @@
     <div id="app-container">
         <header>
             <h1>PROJECT M <span class="status-dot">●</span></h1>
-            <p>IMMUTABLE | DECENTRALIZED | EXPERIMENTAL</p>
+            <p>SOAP | DECENTRALIZED | EXPERIMENTAL</p>
             <button id="btn-connect" class="btn-connect" onclick="connectWallet()">CONNECT WALLET</button>
         </header>
 
@@ -259,7 +259,7 @@
                 <div>
                     <span class="step-number">01. ENTER</span>
                     <span class="step-title">Join</span>
-                    Buy 1.0 PMT token. The price is determined by the current Level.
+                    Buy 1.0 SOAP. The price is determined by the current Level.
                 </div>
                 <div>
                     <span class="step-number">02. HOLD</span>
@@ -269,12 +269,12 @@
                 <div>
                     <span class="step-number">03. MINE</span>
                     <span class="step-title">Catch Up</span>
-                    If the Level rises, you can cash in. Pay the difference to "Mine" more tokens.
+                    If the Level rises, you fall behind. Pay the difference to "Mine" and stay current.
                 </div>
                 <div>
                     <span class="step-number">04. EXIT</span>
                     <span class="step-title">Burn & Profit</span>
-                    Burn your tokens anytime to claim your % share of the Treasury (minus 4% tax).
+                    Burn your SOAP anytime to claim your % share of the Treasury (minus 4% tax).
                 </div>
             </div>
         </div>
@@ -288,7 +288,7 @@
             </div>
             <div class="panel">
                 <h3>My Stats</h3>
-                <div class="big-number"><span id="user-balance">-</span> PMT</div>
+                <div class="big-number"><span id="user-balance">-</span> SOAP</div>
                 <div>My Level: <span id="user-level">-</span></div>
                 <div>Value if Burned: <span id="user-value" style="color: var(--danger);">-</span> ETH</div>
             </div>
@@ -298,7 +298,7 @@
             <h3>Actions</h3>
             
             <div class="action-row">
-                <button class="btn-action" style="flex:1" onclick="joinGame()">JOIN (Buy 1.0 PMT)</button>
+                <button class="btn-action" style="flex:1" onclick="joinGame()">JOIN (Buy 1.0 SOAP)</button>
             </div>
             <small style="color:#666;">Requires <span id="join-cost">-</span> ETH</small>
             
@@ -314,7 +314,7 @@
             <h3 style="color:var(--danger); margin-bottom:10px;">EXIT STRATEGY</h3>
             
             <div class="action-row">
-                <input type="number" id="burn-amount-input" placeholder="Amount to Burn (e.g. 0.5)">
+                <input type="number" id="burn-amount-input" placeholder="Amount to Burn (e.g. 1.0)">
                 <button class="btn-burn-partial" onclick="burnPartial()">BURN X</button>
             </div>
             
@@ -336,25 +336,29 @@
 
     <script>
         // --- CONFIGURATION ---
-        const CONTRACT_ADDRESS = "https://etherscan.io/address/0x7ffD96BC3810BC570b07Df8412d657B2aC81410A#code"; 
+        const CONTRACT_ADDRESS = "0x7ffD96BC3810BC570b07Df8412d657B2aC81410A"; 
         
         const WHITEPAPER_URL = "https://projectm.xyz/whitepaper.pdf"; 
         const ECOSYSTEM_URL = "https://t.me/ProjectM_Community";
 
         // AUTO-UPDATE LINKS
-        document.getElementById('link-etherscan').href = `https://etherscan.io/address/0x7ffD96BC3810BC570b07Df8412d657B2aC81410A#code`; // Defaulting to Sepolia for testing
+        document.getElementById('link-etherscan').href = `https://etherscan.io/address/${CONTRACT_ADDRESS}#code`; 
         document.getElementById('link-whitepaper').href = WHITEPAPER_URL;
         document.getElementById('link-ecosystem').href = ECOSYSTEM_URL;
 
+        // UPDATED ABI TO MATCH THE NEW SOLIDITY CODE
         const ABI = [
+            // Write Functions
             "function join() external payable",
             "function mine() external payable",
             "function burnAllSoap() external",
-            "function burnSoap(uint256 quantity) external", 
+            "function burnSoap(uint256 quantity) external",
+            // Read Functions (Variables as functions)
             "function contractLevel() public view returns (uint256)",
             "function getCurrentPrice() public view returns (uint256)",
-            "function projectStats() public view returns (uint256 level, uint256 entryPrice, uint256 burnPrice, uint256 burned, uint256 supply, uint256 balance, uint256 tax, uint256 inLevel)",
-            "function playerStats(address user) public view returns (uint256 balance, uint256 level, uint256 toMine, uint256 gross, uint256 net, uint256 tax)"
+            "function levelOf(address user) public view returns (uint256)",
+            "function balanceOf(address account) external view returns (uint256)",
+            "function totalSupply() external view returns (uint256)"
         ];
 
         let provider, signer, contract;
@@ -384,7 +388,7 @@
                 
                 contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
                 refreshData(address);
-                setInterval(() => refreshData(address), 10000);
+                setInterval(() => refreshData(address), 10000); // Auto-refresh every 10s
             } catch (e) {
                 console.error(e);
                 alert("Connection Failed");
@@ -394,26 +398,52 @@
         async function refreshData(address) {
             if(!contract) return;
             try {
-                // Fetch Global Stats
-                const pStats = await contract.projectStats();
-                document.getElementById('global-level').innerText = pStats.level.toString();
-                document.getElementById('global-price').innerText = ethers.utils.formatEther(pStats.entryPrice);
-                document.getElementById('global-treasury').innerText = parseFloat(ethers.utils.formatEther(pStats.balance)).toFixed(4);
-                
-                document.getElementById('join-cost').innerText = ethers.utils.formatEther(pStats.entryPrice);
-                currentPriceWei = pStats.entryPrice;
+                // The new contract doesn't have projectStats(), so we fetch data individually using Promise.all for speed
+                const [
+                    cLevel,
+                    cPrice,
+                    userLvl,
+                    userBal,
+                    cSupply,
+                    treasuryWei
+                ] = await Promise.all([
+                    contract.contractLevel(),
+                    contract.getCurrentPrice(),
+                    contract.levelOf(address),
+                    contract.balanceOf(address),
+                    contract.totalSupply(),
+                    provider.getBalance(CONTRACT_ADDRESS) // Get ETH balance of contract directly from provider
+                ]);
 
-                // Fetch User Stats
-                const uStats = await contract.playerStats(address);
-                document.getElementById('user-balance').innerText = parseFloat(ethers.utils.formatEther(uStats.balance)).toFixed(2);
-                document.getElementById('user-level').innerText = uStats.level.toString();
-                document.getElementById('user-value').innerText = parseFloat(ethers.utils.formatEther(uStats.net)).toFixed(4);
+                // 1. UPDATE GLOBAL STATE
+                document.getElementById('global-level').innerText = cLevel.toString();
+                document.getElementById('global-price').innerText = ethers.utils.formatEther(cPrice);
+                document.getElementById('global-treasury').innerText = parseFloat(ethers.utils.formatEther(treasuryWei)).toFixed(4);
                 
-                // --- POLISH: Smart Mine Button Logic ---
+                document.getElementById('join-cost').innerText = ethers.utils.formatEther(cPrice);
+                currentPriceWei = cPrice;
+
+                // 2. UPDATE USER STATS
+                document.getElementById('user-balance').innerText = parseFloat(ethers.utils.formatEther(userBal)).toFixed(2);
+                document.getElementById('user-level').innerText = userLvl.toString();
+
+                // 3. CALCULATE BURN VALUE (Manual Math based on Solidity Logic)
+                // Logic: Gross = (UserBalance * Treasury) / TotalSupply
+                //        Net   = Gross - (Gross / 25)
+                let netValueEth = "0.0000";
+                
+                if (cSupply.gt(0) && userBal.gt(0)) {
+                    const gross = userBal.mul(treasuryWei).div(cSupply);
+                    const tax = gross.div(25); // 4%
+                    const net = gross.sub(tax);
+                    netValueEth = parseFloat(ethers.utils.formatEther(net)).toFixed(4);
+                }
+                document.getElementById('user-value').innerText = netValueEth;
+                
+                // 4. SMART MINE BUTTON
                 const mineBtn = document.getElementById('btn-mine');
-                // The contract returns 'toMine' as 1 (true) or 0 (false)
-                // Or we can compare levels manually: if globalLevel > userLevel
-                const needsMining = uStats.toMine > 0 || (pStats.level.gt(uStats.level) && uStats.balance.gt(0));
+                // Needs mining if user has tokens AND their level is less than contract level
+                const needsMining = userBal.gt(0) && cLevel.gt(userLvl);
 
                 if (needsMining) {
                     mineBtn.innerText = "⚠️ MINE REQUIRED (LEVEL UP)";
@@ -437,7 +467,8 @@
             if(!contract) return alert("Connect Wallet First");
             setLoading(true);
             try {
-                const tx = await contract.join({ value: currentPriceWei });
+                // Assuming standard gas limit, increase slightly for safety
+                const tx = await contract.join({ value: currentPriceWei, gasLimit: 200000 });
                 await tx.wait();
                 alert("Welcome to the experiment.");
                 refreshData(await signer.getAddress());
@@ -451,7 +482,7 @@
             if(!contract) return alert("Connect Wallet First");
             setLoading(true);
             try {
-                const tx = await contract.mine({ value: currentPriceWei });
+                const tx = await contract.mine({ value: currentPriceWei, gasLimit: 200000 });
                 await tx.wait();
                 alert("Mining Complete.");
                 refreshData(await signer.getAddress());
@@ -466,7 +497,7 @@
             const amount = document.getElementById('burn-amount-input').value;
             if(!amount || amount <= 0) return alert("Enter a valid amount");
 
-            if(!confirm(`Burn ${amount} PMT?`)) return;
+            if(!confirm(`Burn ${amount} SOAP?`)) return;
             
             setLoading(true);
             try {
