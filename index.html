@@ -246,7 +246,7 @@
     <div id="app-container">
         <header>
             <h1>PROJECT M <span class="status-dot">●</span></h1>
-            <p>SOAP | DECENTRALIZED | EXPERIMENTAL</p>
+            <p>IMMUTABLE | DECENTRALIZED | EXPERIMENTAL</p>
             <button id="btn-connect" class="btn-connect" onclick="connectWallet()">CONNECT WALLET</button>
         </header>
 
@@ -341,19 +341,19 @@
         const WHITEPAPER_URL = "https://projectm.xyz/whitepaper.pdf"; 
         const ECOSYSTEM_URL = "https://t.me/ProjectM_Community";
 
-        // AUTO-UPDATE LINKS
+        // AUTO-UPDATE LINKS (Using Mainnet Etherscan)
         document.getElementById('link-etherscan').href = `https://etherscan.io/address/${CONTRACT_ADDRESS}#code`; 
         document.getElementById('link-whitepaper').href = WHITEPAPER_URL;
         document.getElementById('link-ecosystem').href = ECOSYSTEM_URL;
 
-        // UPDATED ABI TO MATCH THE NEW SOLIDITY CODE
+        // ABI Matching your Solidity Code
         const ABI = [
             // Write Functions
             "function join() external payable",
             "function mine() external payable",
             "function burnAllSoap() external",
             "function burnSoap(uint256 quantity) external",
-            // Read Functions (Variables as functions)
+            // Read Functions
             "function contractLevel() public view returns (uint256)",
             "function getCurrentPrice() public view returns (uint256)",
             "function levelOf(address user) public view returns (uint256)",
@@ -362,7 +362,7 @@
         ];
 
         let provider, signer, contract;
-        let currentPriceWei = 0;
+        let currentPriceWei = ethers.BigNumber.from("0");
 
         // --- UI LOGIC ---
         function acceptRisk() {
@@ -378,101 +378,131 @@
 
         async function connectWallet() {
             if (!window.ethereum) return alert("Please install MetaMask!");
+            
+            setLoading(true, "Connecting...");
+            
             try {
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
                 signer = provider.getSigner();
                 const address = await signer.getAddress();
                 
+                // Check Network (Alert if NOT on Mainnet - Chain ID 1)
+                const network = await provider.getNetwork();
+                console.log("Connected to chain:", network.chainId);
+                if (network.chainId !== 1) {
+                    alert("⚠️ WARNING: You are not connected to Ethereum Mainnet. Please switch networks in MetaMask.");
+                }
+
                 document.getElementById('btn-connect').innerText = "CONNECTED: " + address.slice(0,6) + "...";
                 
                 contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-                refreshData(address);
-                setInterval(() => refreshData(address), 10000); // Auto-refresh every 10s
+                
+                // Initial Data Load
+                await refreshData(address);
+                
+                // Auto-refresh loop
+                setInterval(() => refreshData(address), 10000);
+                
             } catch (e) {
                 console.error(e);
-                alert("Connection Failed");
+                alert("Connection Failed: " + e.message);
             }
+            setLoading(false);
         }
 
+        // --- ROBUST DATA FETCHING ---
         async function refreshData(address) {
             if(!contract) return;
-            try {
-                // The new contract doesn't have projectStats(), so we fetch data individually using Promise.all for speed
-                const [
-                    cLevel,
-                    cPrice,
-                    userLvl,
-                    userBal,
-                    cSupply,
-                    treasuryWei
-                ] = await Promise.all([
-                    contract.contractLevel(),
-                    contract.getCurrentPrice(),
-                    contract.levelOf(address),
-                    contract.balanceOf(address),
-                    contract.totalSupply(),
-                    provider.getBalance(CONTRACT_ADDRESS) // Get ETH balance of contract directly from provider
-                ]);
 
-                // 1. UPDATE GLOBAL STATE
+            // 1. Fetch Contract Level
+            try {
+                const cLevel = await contract.contractLevel();
                 document.getElementById('global-level').innerText = cLevel.toString();
-                document.getElementById('global-price').innerText = ethers.utils.formatEther(cPrice);
-                document.getElementById('global-treasury').innerText = parseFloat(ethers.utils.formatEther(treasuryWei)).toFixed(4);
                 
+                // If we got level, try getting price (sometimes fails if level logic is weird)
+                const cPrice = await contract.getCurrentPrice();
+                document.getElementById('global-price').innerText = ethers.utils.formatEther(cPrice);
                 document.getElementById('join-cost').innerText = ethers.utils.formatEther(cPrice);
                 currentPriceWei = cPrice;
+            } catch(e) { console.error("Error fetching Level/Price:", e); }
 
-                // 2. UPDATE USER STATS
+            // 2. Fetch Treasury (ETH Balance)
+            let treasuryWei = ethers.BigNumber.from("0");
+            try {
+                treasuryWei = await provider.getBalance(CONTRACT_ADDRESS);
+                document.getElementById('global-treasury').innerText = parseFloat(ethers.utils.formatEther(treasuryWei)).toFixed(4);
+            } catch(e) { console.error("Error fetching Treasury:", e); }
+
+            // 3. Fetch User Stats (Balance & Level)
+            let userBal = ethers.BigNumber.from("0");
+            let userLvl = ethers.BigNumber.from("0");
+            
+            try {
+                userBal = await contract.balanceOf(address);
                 document.getElementById('user-balance').innerText = parseFloat(ethers.utils.formatEther(userBal)).toFixed(2);
-                document.getElementById('user-level').innerText = userLvl.toString();
-
-                // 3. CALCULATE BURN VALUE (Manual Math based on Solidity Logic)
-                // Logic: Gross = (UserBalance * Treasury) / TotalSupply
-                //        Net   = Gross - (Gross / 25)
-                let netValueEth = "0.0000";
                 
+                userLvl = await contract.levelOf(address);
+                document.getElementById('user-level').innerText = userLvl.toString();
+            } catch(e) { console.error("Error fetching User Stats:", e); }
+
+            // 4. Calculate Burn Value & Update UI
+            try {
+                const cSupply = await contract.totalSupply();
+                
+                let netValueEth = "0.0000";
                 if (cSupply.gt(0) && userBal.gt(0)) {
+                    // Formula: (UserBal * Treasury) / Supply
                     const gross = userBal.mul(treasuryWei).div(cSupply);
-                    const tax = gross.div(25); // 4%
+                    const tax = gross.div(25); // 4% tax
                     const net = gross.sub(tax);
                     netValueEth = parseFloat(ethers.utils.formatEther(net)).toFixed(4);
                 }
                 document.getElementById('user-value').innerText = netValueEth;
+
+                // 5. Smart Mine Button Logic
+                updateMineButton(userBal, userLvl);
                 
-                // 4. SMART MINE BUTTON
-                const mineBtn = document.getElementById('btn-mine');
-                // Needs mining if user has tokens AND their level is less than contract level
-                const needsMining = userBal.gt(0) && cLevel.gt(userLvl);
+            } catch(e) { console.error("Error calculating value:", e); }
+        }
 
-                if (needsMining) {
-                    mineBtn.innerText = "⚠️ MINE REQUIRED (LEVEL UP)";
-                    mineBtn.style.border = "1px solid var(--danger)";
-                    mineBtn.style.color = "var(--danger)";
-                    mineBtn.style.background = "rgba(255, 50, 50, 0.1)";
-                } else {
-                    mineBtn.innerText = "MINE (UP TO DATE)";
-                    mineBtn.style.border = "1px solid #333";
-                    mineBtn.style.color = "#777";
-                    mineBtn.style.background = "#222";
-                }
+        function updateMineButton(userBal, userLvl) {
+            const mineBtn = document.getElementById('btn-mine');
+            const globalLevelText = document.getElementById('global-level').innerText;
+            
+            // Safety check if global level hasn't loaded yet
+            if(globalLevelText === "-") return;
+            
+            const globalLevel = parseInt(globalLevelText);
+            const userLevelInt = parseInt(userLvl.toString());
 
-            } catch (e) {
-                console.log("Data refresh error:", e);
+            const needsMining = userBal.gt(0) && (globalLevel > userLevelInt);
+
+            if (needsMining) {
+                mineBtn.innerText = "⚠️ MINE REQUIRED (LEVEL UP)";
+                mineBtn.style.border = "1px solid var(--danger)";
+                mineBtn.style.color = "var(--danger)";
+                mineBtn.style.background = "rgba(255, 50, 50, 0.1)";
+            } else {
+                mineBtn.innerText = "MINE (UP TO DATE)";
+                mineBtn.style.border = "1px solid #333";
+                mineBtn.style.color = "#777";
+                mineBtn.style.background = "#222";
             }
         }
 
         // --- ACTIONS ---
         async function joinGame() {
             if(!contract) return alert("Connect Wallet First");
-            setLoading(true);
+            setLoading(true, "Confirm in Wallet...");
             try {
-                // Assuming standard gas limit, increase slightly for safety
-                const tx = await contract.join({ value: currentPriceWei, gasLimit: 200000 });
+                const tx = await contract.join({ value: currentPriceWei, gasLimit: 300000 });
+                setLoading(true, "Mining Transaction...");
                 await tx.wait();
                 alert("Welcome to the experiment.");
                 refreshData(await signer.getAddress());
             } catch (e) {
+                console.error(e);
                 alert("Error: " + (e.reason || e.message));
             }
             setLoading(false);
@@ -480,9 +510,10 @@
 
         async function mineTokens() {
             if(!contract) return alert("Connect Wallet First");
-            setLoading(true);
+            setLoading(true, "Confirm in Wallet...");
             try {
-                const tx = await contract.mine({ value: currentPriceWei, gasLimit: 200000 });
+                const tx = await contract.mine({ value: currentPriceWei, gasLimit: 300000 });
+                setLoading(true, "Mining Transaction...");
                 await tx.wait();
                 alert("Mining Complete.");
                 refreshData(await signer.getAddress());
@@ -499,10 +530,10 @@
 
             if(!confirm(`Burn ${amount} SOAP?`)) return;
             
-            setLoading(true);
+            setLoading(true, "Burning...");
             try {
                 const weiAmount = ethers.utils.parseEther(amount.toString());
-                const tx = await contract.burnSoap(weiAmount);
+                const tx = await contract.burnSoap(weiAmount, { gasLimit: 300000 });
                 await tx.wait();
                 alert("Tokens burned.");
                 refreshData(await signer.getAddress());
@@ -514,9 +545,9 @@
 
         async function burnExit() {
             if(!confirm("Are you sure? This will burn ALL your tokens.")) return;
-            setLoading(true);
+            setLoading(true, "Exiting...");
             try {
-                const tx = await contract.burnAllSoap();
+                const tx = await contract.burnAllSoap({ gasLimit: 300000 });
                 await tx.wait();
                 alert("Successfully Exited.");
                 refreshData(await signer.getAddress());
@@ -526,8 +557,10 @@
             setLoading(false);
         }
 
-        function setLoading(state) {
-            document.getElementById('status-msg').style.display = state ? 'block' : 'none';
+        function setLoading(state, msg = "Processing...") {
+            const el = document.getElementById('status-msg');
+            el.innerText = msg;
+            el.style.display = state ? 'block' : 'none';
         }
     </script>
 </body>
