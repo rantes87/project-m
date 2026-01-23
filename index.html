@@ -28,7 +28,92 @@
             min-height: 100vh;
         }
 
-        /* DISCLAIMER MODAL */
+        /* --- CUSTOM MODAL STYLES --- */
+        #pm-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pm-modal-box {
+            background: var(--panel);
+            border: 1px solid var(--accent);
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
+            animation: glitch-anim 0.2s ease-out;
+        }
+
+        .pm-modal-header {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--accent);
+            padding: 10px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .pm-modal-content {
+            padding: 20px;
+            font-size: 15px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .pm-modal-input {
+            width: 100%;
+            background: black;
+            border: 1px solid #555;
+            color: white;
+            padding: 10px;
+            margin-top: 15px;
+            font-family: var(--font-mono);
+            display: none; /* Hidden unless prompt */
+        }
+        .pm-modal-input:focus { outline: 1px solid var(--accent); }
+
+        .pm-modal-actions {
+            display: flex;
+            border-top: 1px solid var(--border);
+        }
+
+        .pm-modal-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #888;
+            padding: 15px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .pm-modal-btn:hover { background: #222; color: white; }
+        
+        .pm-btn-confirm { border-left: 1px solid var(--border); color: var(--accent); }
+        .pm-btn-confirm:hover { background: var(--accent); color: black; }
+        
+        /* Danger state for Confirm buttons */
+        .pm-modal-box.danger { border-color: var(--danger); box-shadow: 0 0 30px rgba(255, 50, 50, 0.15); }
+        .pm-modal-box.danger .pm-modal-header { color: var(--danger); background: rgba(255, 50, 50, 0.1); }
+        .pm-modal-box.danger .pm-btn-confirm { color: var(--danger); }
+        .pm-modal-box.danger .pm-btn-confirm:hover { background: var(--danger); color: white; }
+
+        @keyframes glitch-anim {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- EXISTING STYLES --- */
+
+        /* DISCLAIMER MODAL (Initial Load) */
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -110,8 +195,6 @@
             padding: 0 20px 20px 20px;
             border-top: 1px solid rgba(0, 255, 65, 0.2);
         }
-        
-        /* Hidden state logic */
         .guide-collapsed .guide-steps { display: none; }
         .guide-collapsed .guide-arrow { transform: rotate(-90deg); }
 
@@ -165,7 +248,6 @@
         .btn-action { background: #333; color: white; border: 1px solid #555; }
         .btn-action:hover { background: #444; border-color: #777; }
         
-        /* Burn Specific Styles */
         .btn-burn-partial { background: #330000; border: 1px solid var(--danger); color: var(--danger); }
         .btn-burn-partial:hover { background: #550000; color: white; }
         
@@ -174,7 +256,7 @@
 
         .loader { color: yellow; display: none; margin-top: 10px; text-align: center;}
 
-        /* TABS DESIGN */
+        /* TABS */
         .tabs-container {
             margin-top: 50px;
             border-top: 1px solid var(--border);
@@ -217,7 +299,7 @@
             letter-spacing: 1px;
         }
 
-        /* Mobile Adjustments */
+        /* Mobile */
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr; }
             .guide-steps { grid-template-columns: 1fr; text-align: left; }
@@ -243,10 +325,24 @@
         </div>
     </div>
 
+    <div id="pm-modal-overlay">
+        <div class="pm-modal-box" id="pm-modal-box">
+            <div class="pm-modal-header">PROJECT-M SAYS:</div>
+            <div class="pm-modal-content">
+                <div id="pm-modal-message">Transaction details here...</div>
+                <input type="text" id="pm-modal-input" class="pm-modal-input" autocomplete="off">
+            </div>
+            <div class="pm-modal-actions">
+                <button id="pm-modal-cancel" class="pm-modal-btn">CANCEL</button>
+                <button id="pm-modal-confirm" class="pm-modal-btn pm-btn-confirm">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
     <div id="app-container">
         <header>
             <h1>PROJECT M <span class="status-dot">●</span></h1>
-            <p>IMMUTABLE | DECENTRALIZED | EXPERIMENTAL</p>
+            <p>SOAP | DECENTRALIZED | EXPERIMENTAL</p>
             <button id="btn-connect" class="btn-connect" onclick="connectWallet()">CONNECT WALLET</button>
         </header>
 
@@ -341,19 +437,15 @@
         const WHITEPAPER_URL = "https://projectm.xyz/whitepaper.pdf"; 
         const ECOSYSTEM_URL = "https://t.me/ProjectM_Community";
 
-        // AUTO-UPDATE LINKS (Using Mainnet Etherscan)
         document.getElementById('link-etherscan').href = `https://etherscan.io/address/${CONTRACT_ADDRESS}#code`; 
         document.getElementById('link-whitepaper').href = WHITEPAPER_URL;
         document.getElementById('link-ecosystem').href = ECOSYSTEM_URL;
 
-        // ABI Matching your Solidity Code
         const ABI = [
-            // Write Functions
             "function join() external payable",
             "function mine() external payable",
             "function burnAllSoap() external",
             "function burnSoap(uint256 quantity) external",
-            // Read Functions
             "function contractLevel() public view returns (uint256)",
             "function getCurrentPrice() public view returns (uint256)",
             "function levelOf(address user) public view returns (uint256)",
@@ -363,6 +455,64 @@
 
         let provider, signer, contract;
         let currentPriceWei = ethers.BigNumber.from("0");
+
+        // --- NEW CUSTOM DIALOG SYSTEM ---
+        
+        function showDialog(type, message, isDanger = false) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('pm-modal-overlay');
+                const box = document.getElementById('pm-modal-box');
+                const msgEl = document.getElementById('pm-modal-message');
+                const inputEl = document.getElementById('pm-modal-input');
+                const btnCancel = document.getElementById('pm-modal-cancel');
+                const btnConfirm = document.getElementById('pm-modal-confirm');
+
+                // Reset State
+                msgEl.innerText = message;
+                inputEl.value = '';
+                overlay.style.display = 'flex';
+                
+                // Style based on Danger
+                if(isDanger) {
+                    box.classList.add('danger');
+                    btnConfirm.style.color = 'var(--danger)';
+                } else {
+                    box.classList.remove('danger');
+                    btnConfirm.style.color = 'var(--accent)';
+                }
+
+                // Setup Type
+                if (type === 'alert') {
+                    inputEl.style.display = 'none';
+                    btnCancel.style.display = 'none';
+                    btnConfirm.innerText = 'OK';
+                } else if (type === 'confirm') {
+                    inputEl.style.display = 'none';
+                    btnCancel.style.display = 'block';
+                    btnConfirm.innerText = 'CONFIRM';
+                } else if (type === 'prompt') {
+                    inputEl.style.display = 'block';
+                    btnCancel.style.display = 'block';
+                    btnConfirm.innerText = 'SUBMIT';
+                    setTimeout(() => inputEl.focus(), 100);
+                }
+
+                // Event Handlers
+                const close = (result) => {
+                    overlay.style.display = 'none';
+                    // Remove listeners to prevent stacking
+                    btnCancel.onclick = null;
+                    btnConfirm.onclick = null;
+                    resolve(result);
+                };
+
+                btnCancel.onclick = () => close(false);
+                btnConfirm.onclick = () => {
+                    if (type === 'prompt') close(inputEl.value);
+                    else close(true);
+                };
+            });
+        }
 
         // --- UI LOGIC ---
         function acceptRisk() {
@@ -377,7 +527,10 @@
         }
 
         async function connectWallet() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
+            if (!window.ethereum) {
+                await showDialog('alert', "Please install MetaMask!");
+                return;
+            }
             
             setLoading(true, "Connecting...");
             
@@ -387,95 +540,69 @@
                 signer = provider.getSigner();
                 const address = await signer.getAddress();
                 
-                // Check Network (Alert if NOT on Mainnet - Chain ID 1)
                 const network = await provider.getNetwork();
-                console.log("Connected to chain:", network.chainId);
                 if (network.chainId !== 1) {
-                    alert("⚠️ WARNING: You are not connected to Ethereum Mainnet. Please switch networks in MetaMask.");
+                    await showDialog('alert', "⚠️ WARNING: You are not connected to Ethereum Mainnet. Please switch networks.", true);
                 }
 
                 document.getElementById('btn-connect').innerText = "CONNECTED: " + address.slice(0,6) + "...";
-                
                 contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-                
-                // Initial Data Load
                 await refreshData(address);
-                
-                // Auto-refresh loop
                 setInterval(() => refreshData(address), 10000);
                 
             } catch (e) {
                 console.error(e);
-                alert("Connection Failed: " + e.message);
+                await showDialog('alert', "Connection Failed: " + e.message, true);
             }
             setLoading(false);
         }
 
-        // --- ROBUST DATA FETCHING ---
         async function refreshData(address) {
             if(!contract) return;
 
-            // 1. Fetch Contract Level
             try {
+                // 1. Global
                 const cLevel = await contract.contractLevel();
-                document.getElementById('global-level').innerText = cLevel.toString();
-                
-                // If we got level, try getting price (sometimes fails if level logic is weird)
                 const cPrice = await contract.getCurrentPrice();
+                document.getElementById('global-level').innerText = cLevel.toString();
                 document.getElementById('global-price').innerText = ethers.utils.formatEther(cPrice);
                 document.getElementById('join-cost').innerText = ethers.utils.formatEther(cPrice);
                 currentPriceWei = cPrice;
-            } catch(e) { console.error("Error fetching Level/Price:", e); }
 
-            // 2. Fetch Treasury (ETH Balance)
-            let treasuryWei = ethers.BigNumber.from("0");
-            try {
-                treasuryWei = await provider.getBalance(CONTRACT_ADDRESS);
+                // 2. Treasury
+                const treasuryWei = await provider.getBalance(CONTRACT_ADDRESS);
                 document.getElementById('global-treasury').innerText = parseFloat(ethers.utils.formatEther(treasuryWei)).toFixed(4);
-            } catch(e) { console.error("Error fetching Treasury:", e); }
 
-            // 3. Fetch User Stats (Balance & Level)
-            let userBal = ethers.BigNumber.from("0");
-            let userLvl = ethers.BigNumber.from("0");
-            
-            try {
-                userBal = await contract.balanceOf(address);
+                // 3. User
+                const userBal = await contract.balanceOf(address);
+                const userLvl = await contract.levelOf(address);
                 document.getElementById('user-balance').innerText = parseFloat(ethers.utils.formatEther(userBal)).toFixed(2);
-                
-                userLvl = await contract.levelOf(address);
                 document.getElementById('user-level').innerText = userLvl.toString();
-            } catch(e) { console.error("Error fetching User Stats:", e); }
 
-            // 4. Calculate Burn Value & Update UI
-            try {
+                // 4. Value
                 const cSupply = await contract.totalSupply();
-                
                 let netValueEth = "0.0000";
                 if (cSupply.gt(0) && userBal.gt(0)) {
-                    // Formula: (UserBal * Treasury) / Supply
                     const gross = userBal.mul(treasuryWei).div(cSupply);
-                    const tax = gross.div(25); // 4% tax
+                    const tax = gross.div(25); 
                     const net = gross.sub(tax);
                     netValueEth = parseFloat(ethers.utils.formatEther(net)).toFixed(4);
                 }
                 document.getElementById('user-value').innerText = netValueEth;
 
-                // 5. Smart Mine Button Logic
+                // 5. Button
                 updateMineButton(userBal, userLvl);
                 
-            } catch(e) { console.error("Error calculating value:", e); }
+            } catch(e) { console.error("Error refreshing data:", e); }
         }
 
         function updateMineButton(userBal, userLvl) {
             const mineBtn = document.getElementById('btn-mine');
             const globalLevelText = document.getElementById('global-level').innerText;
-            
-            // Safety check if global level hasn't loaded yet
             if(globalLevelText === "-") return;
             
             const globalLevel = parseInt(globalLevelText);
             const userLevelInt = parseInt(userLvl.toString());
-
             const needsMining = userBal.gt(0) && (globalLevel > userLevelInt);
 
             if (needsMining) {
@@ -491,68 +618,81 @@
             }
         }
 
-        // --- ACTIONS ---
+        // --- ACTIONS (Now using custom dialogs) ---
         async function joinGame() {
-            if(!contract) return alert("Connect Wallet First");
+            if(!contract) return showDialog('alert', "Connect Wallet First");
+            
+            // Replaced alert/confirm logic
+            const cost = ethers.utils.formatEther(currentPriceWei);
+            const proceed = await showDialog('confirm', `JOIN THE LADDER?\nCost: ${cost} ETH`);
+            if(!proceed) return;
+
             setLoading(true, "Confirm in Wallet...");
             try {
                 const tx = await contract.join({ value: currentPriceWei, gasLimit: 300000 });
                 setLoading(true, "Mining Transaction...");
                 await tx.wait();
-                alert("Welcome to the experiment.");
+                await showDialog('alert', "Welcome to the experiment.");
                 refreshData(await signer.getAddress());
             } catch (e) {
                 console.error(e);
-                alert("Error: " + (e.reason || e.message));
+                await showDialog('alert', "Error: " + (e.reason || e.message), true);
             }
             setLoading(false);
         }
 
         async function mineTokens() {
-            if(!contract) return alert("Connect Wallet First");
+            if(!contract) return showDialog('alert', "Connect Wallet First");
+            
+            const proceed = await showDialog('confirm', "MINE TOKENS?\nThis catches you up to current level.");
+            if(!proceed) return;
+
             setLoading(true, "Confirm in Wallet...");
             try {
                 const tx = await contract.mine({ value: currentPriceWei, gasLimit: 300000 });
                 setLoading(true, "Mining Transaction...");
                 await tx.wait();
-                alert("Mining Complete.");
+                await showDialog('alert', "Mining Complete.");
                 refreshData(await signer.getAddress());
             } catch (e) {
-                alert("Error: " + (e.reason || e.message));
+                await showDialog('alert', "Error: " + (e.reason || e.message), true);
             }
             setLoading(false);
         }
 
         async function burnPartial() {
-            if(!contract) return alert("Connect Wallet First");
+            if(!contract) return showDialog('alert', "Connect Wallet First");
             const amount = document.getElementById('burn-amount-input').value;
-            if(!amount || amount <= 0) return alert("Enter a valid amount");
+            if(!amount || amount <= 0) return showDialog('alert', "Enter a valid amount", true);
 
-            if(!confirm(`Burn ${amount} SOAP?`)) return;
+            const proceed = await showDialog('confirm', `PERMANENTLY BURN ${amount} SOAP?\nYou will receive your % share of treasury.`, true);
+            if(!proceed) return;
             
             setLoading(true, "Burning...");
             try {
                 const weiAmount = ethers.utils.parseEther(amount.toString());
                 const tx = await contract.burnSoap(weiAmount, { gasLimit: 300000 });
                 await tx.wait();
-                alert("Tokens burned.");
+                await showDialog('alert', "Tokens burned. ETH sent to wallet.");
                 refreshData(await signer.getAddress());
             } catch (e) {
-                alert("Error: " + (e.reason || e.message));
+                await showDialog('alert', "Error: " + (e.reason || e.message), true);
             }
             setLoading(false);
         }
 
         async function burnExit() {
-            if(!confirm("Are you sure? This will burn ALL your tokens.")) return;
+            const proceed = await showDialog('confirm', "⚠ FINAL WARNING ⚠\n\nThis will BURN ALL your tokens and exit the game.\nAre you absolutely sure?", true);
+            if(!proceed) return;
+
             setLoading(true, "Exiting...");
             try {
                 const tx = await contract.burnAllSoap({ gasLimit: 300000 });
                 await tx.wait();
-                alert("Successfully Exited.");
+                await showDialog('alert', "Successfully Exited.");
                 refreshData(await signer.getAddress());
             } catch (e) {
-                alert("Error: " + (e.reason || e.message));
+                await showDialog('alert', "Error: " + (e.reason || e.message), true);
             }
             setLoading(false);
         }
